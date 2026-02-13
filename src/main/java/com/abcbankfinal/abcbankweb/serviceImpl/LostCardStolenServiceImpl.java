@@ -1,5 +1,6 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
 
+import com.abcbankfinal.abcbankweb.dto.LostCardListRequestDTO;
 import com.abcbankfinal.abcbankweb.dto.LostCardResponseDTO;
 import com.abcbankfinal.abcbankweb.dto.LostCardSaveRequestDTO;
 import com.abcbankfinal.abcbankweb.model.Account;
@@ -9,7 +10,13 @@ import com.abcbankfinal.abcbankweb.repository.LostCardStolenRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -57,7 +64,10 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                                 lc.getLostCardStolenDate(),
                                 lc.getStatus(),
                                 lc.getRemarks(),
-                                lc.getAccount().getAccountNumber()
+                                lc.getAccount().getAccountNumber(),
+                                lc.getCreatedDate(),
+                                lc.getApprovedBy(),
+                                lc.getApprovedDate()
                         ))
                         .toList();
 
@@ -67,4 +77,73 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                 list
         );
     }
+
+
+
+    @Override
+    public ApiResponse<Page<LostCardResponseDTO>> getAllLostCards(LostCardListRequestDTO request) {
+        Pageable pageable = PageRequest.of(
+                request.getPage(),
+                request.getSize(),
+                Sort.by("createdDate").descending()
+        );
+        Page<LostCardStolen> resultPage;
+        if (request.getStatus() == null || request.getStatus().isBlank()) {
+            resultPage = lostCardRepo.findAll(pageable);
+        } else {
+            resultPage = lostCardRepo.findByStatus(
+                    request.getStatus().toUpperCase(),
+                    pageable
+            );
+        }
+        Page<LostCardResponseDTO> response =
+                resultPage.map(lc -> new LostCardResponseDTO(
+                        lc.getLostCardId(),
+                        lc.getLostCardNumber(),
+                        lc.getLostCardStolenDate(),
+                        lc.getStatus(),
+                        lc.getRemarks(),
+                        lc.getAccount().getAccountNumber(),
+                        lc.getCreatedDate(),
+                        lc.getApprovedBy(),
+                        lc.getApprovedDate()
+                ));
+
+        return new ApiResponse<>(
+                true,
+                "Lost card list fetched successfully",
+                response
+        );
+    }
+
+
+    @Override
+    public ApiResponse<LostCardResponseDTO> getById(Long id) {
+
+        LostCardStolen lostCard = lostCardRepo.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Lost Card not found with ID: " + id)
+                );
+
+        LostCardResponseDTO response = new LostCardResponseDTO(
+                lostCard.getLostCardId(),
+                lostCard.getLostCardNumber(),
+                lostCard.getLostCardStolenDate(),
+                lostCard.getStatus(),
+                lostCard.getRemarks(),
+                lostCard.getAccount().getAccountNumber(),
+                lostCard.getCreatedDate(),
+                lostCard.getApprovedBy(),
+                lostCard.getApprovedDate()
+        );
+        return new ApiResponse<>(
+                true,
+                "Lost card fetched successfully",
+                response
+        );
+    }
+
+
+
 }
+

@@ -25,7 +25,7 @@ public class LostCardStolen {
     private LocalDate createdDate;
 
     @Column(name = "approved_by")
-    private Integer approvedBy;
+    private Long approvedBy;
 
     @Column(name = "approved_date")
     private LocalDate approvedDate;
