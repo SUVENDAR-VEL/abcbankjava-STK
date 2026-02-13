@@ -1,5 +1,6 @@
 package com.abcbankfinal.abcbankweb.controller;
 
+import com.abcbankfinal.abcbankweb.dto.CardDto;
 import com.abcbankfinal.abcbankweb.dto.TransactionResponseDto;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.TransactionService;
@@ -25,6 +26,14 @@ public class AccountController {
 
         return ResponseEntity.ok(
                 transactionService.getTransactionsByAccountNumber(accountNumber)
+        );
+    }
+
+    @GetMapping("/userCardList/{accountNumber}")
+    public ResponseEntity<ApiResponse<List<CardDto>>>
+    getCardsByAccountNumber(@PathVariable Long accountNumber) {
+        return ResponseEntity.ok(
+                transactionService.getCardsByAccountNumber(accountNumber)
         );
     }
 }
