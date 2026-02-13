@@ -1,7 +1,5 @@
 package com.abcbankfinal.abcbankweb.controller;
 
-
-
 import com.abcbankfinal.abcbankweb.dto.UserRequestDto;
 import com.abcbankfinal.abcbankweb.dto.UserResponseDto;
 import com.abcbankfinal.abcbankweb.model.User;
@@ -39,6 +37,15 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(userId, request));
     }
 
-
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<UserResponseDto>> loginUser(
+            @RequestBody UserRequestDto request) {
+        return ResponseEntity.ok(userService.loginUser(request));
+    }
+    @GetMapping("/getAllAccountDetails/{userId}")
+    public ResponseEntity<ApiResponse<UserResponseDto>> getAllAccountDetails(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
+    }
 }
 

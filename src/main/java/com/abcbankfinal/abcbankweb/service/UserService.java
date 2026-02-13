@@ -13,4 +13,6 @@ public interface UserService {
     ApiResponse<UserResponseDto> getUserById(Long userId);
 
     ApiResponse<Void> updateUser(Long userId, UserRequestDto request);
+
+    ApiResponse<UserResponseDto> loginUser(UserRequestDto request);
 }

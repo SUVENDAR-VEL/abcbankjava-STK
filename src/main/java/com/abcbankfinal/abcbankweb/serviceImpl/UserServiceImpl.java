@@ -153,5 +153,10 @@ public class UserServiceImpl implements UserService {
                 null
         );
     }
+
+    @Override
+    public ApiResponse<UserResponseDto> loginUser(UserRequestDto request) {
+            return null;
+    }
 }
 
