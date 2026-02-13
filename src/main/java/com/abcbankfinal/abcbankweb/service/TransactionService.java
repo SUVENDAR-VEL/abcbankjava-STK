@@ -5,6 +5,7 @@ import com.abcbankfinal.abcbankweb.response.ApiResponse;
 
 import java.util.List;
 
+
 public interface TransactionService {
 
     ApiResponse<List<TransactionResponseDto>> getTransactionsByAccountNumber(Long accountNumber);

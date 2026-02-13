@@ -1,9 +1,7 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
 
 
-import com.abcbankfinal.abcbankweb.dto.AccountResponseDto;
-import com.abcbankfinal.abcbankweb.dto.UserRequestDto;
-import com.abcbankfinal.abcbankweb.dto.UserResponseDto;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.model.AccountType;
 import com.abcbankfinal.abcbankweb.model.Role;
@@ -154,9 +152,27 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+
     @Override
-    public ApiResponse<UserResponseDto> loginUser(UserRequestDto request) {
-            return null;
+    public ApiResponse<LoginResponseDTO> login(LoginRequestDTO request) {
+
+        User user = userRepository.findByEmailAndPassword(
+                request.getEmail(),
+                request.getPassword()
+        );
+
+        if (user == null) {
+            return new ApiResponse<>(false, "Invalid email or password", null);
+        }
+
+        LoginResponseDTO response = new LoginResponseDTO(
+                user.getUserId(),
+                user.getEmail(),
+                user.getFirstName() + " " + user.getLastName(),
+                user.getRole().getRoleId()
+        );
+
+        return new ApiResponse<>(true, "Login successful", response);
     }
 }
 

@@ -1,5 +1,7 @@
 package com.abcbankfinal.abcbankweb.service;
 
+import com.abcbankfinal.abcbankweb.dto.LoginRequestDTO;
+import com.abcbankfinal.abcbankweb.dto.LoginResponseDTO;
 import com.abcbankfinal.abcbankweb.dto.UserRequestDto;
 import com.abcbankfinal.abcbankweb.dto.UserResponseDto;
 import com.abcbankfinal.abcbankweb.model.User;
@@ -14,5 +16,5 @@ public interface UserService {
 
     ApiResponse<Void> updateUser(Long userId, UserRequestDto request);
 
-    ApiResponse<UserResponseDto> loginUser(UserRequestDto request);
+    ApiResponse<LoginResponseDTO> login(LoginRequestDTO request);
 }
