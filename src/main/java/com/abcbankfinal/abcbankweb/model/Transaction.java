@@ -1,7 +1,5 @@
 package com.abcbankfinal.abcbankweb.model;
 
-
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,9 +27,6 @@ public class Transaction {
     @Column(name = "transactioned_amount", nullable = false)
     private Double transactionedAmount;
 
-    // ---------------------------
-    // Many Transactions → One Account
-    // ---------------------------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_number", nullable = false)
     private Account account;
