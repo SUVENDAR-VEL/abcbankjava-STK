@@ -49,7 +49,6 @@ public class LostCardStolenController {
     public ApiResponse<String> updateLostCard(
             @PathVariable Long id,
             @RequestBody LostCardUpdateRequestDTO request) {
-
         return lostCardStolenService.updateLostCard(id, request);
     }
 }

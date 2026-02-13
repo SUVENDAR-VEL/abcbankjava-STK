@@ -12,4 +12,6 @@ import java.util.List;
 public interface CardRepository extends JpaRepository<Card, Long> {
 
     List<Card> findByAccountAccountNumber(Long accountNumber);
+
+    boolean existsByAccountAccountNumber(Long accountNumber);
 }

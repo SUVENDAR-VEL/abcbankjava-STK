@@ -80,8 +80,6 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         );
     }
 
-
-
     @Override
     public ApiResponse<Page<LostCardResponseDTO>> getAllLostCards(LostCardListRequestDTO request) {
         Pageable pageable = PageRequest.of(
