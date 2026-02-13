@@ -12,4 +12,5 @@ public class TransactionResponseDto {
     private String transactionType;
     private Double transactionedAmount;
     private Double closingBalance;
+    private String transactionCode;
 }

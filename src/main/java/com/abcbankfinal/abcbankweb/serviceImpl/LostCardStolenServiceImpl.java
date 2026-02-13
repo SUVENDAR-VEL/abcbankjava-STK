@@ -3,12 +3,14 @@ package com.abcbankfinal.abcbankweb.serviceImpl;
 import com.abcbankfinal.abcbankweb.dto.LostCardListRequestDTO;
 import com.abcbankfinal.abcbankweb.dto.LostCardResponseDTO;
 import com.abcbankfinal.abcbankweb.dto.LostCardSaveRequestDTO;
+import com.abcbankfinal.abcbankweb.dto.LostCardUpdateRequestDTO;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.model.LostCardStolen;
 import com.abcbankfinal.abcbankweb.repository.AccountRepository;
 import com.abcbankfinal.abcbankweb.repository.LostCardStolenRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -141,6 +143,36 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                 "Lost card fetched successfully",
                 response
         );
+    }
+
+
+
+    @Transactional
+    public ApiResponse<String> updateLostCard(
+            Long id,
+            LostCardUpdateRequestDTO request) {
+
+        LostCardStolen lostCard = lostCardRepo.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Lost Card not found with ID: " + id)
+                );
+        lostCard.setApprovedBy(1L);
+        lostCard.setApprovedDate(LocalDate.now());
+
+        if ("Active".equalsIgnoreCase(request.getAction())) {
+            lostCard.setStatus("Active");
+            lostCard.setRemarks(null);
+        }
+        else if ("Rejected".equalsIgnoreCase(request.getAction())) {
+            lostCard.setStatus("Rejected");
+            lostCard.setRemarks(request.getRemarks()); // optional
+        }
+        else {
+            throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
+        }
+
+        lostCardRepo.save(lostCard);
+        return new ApiResponse<>(true, "Lost card Status updated successfully",null);
     }
 
 

@@ -30,4 +30,7 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_number", nullable = false)
     private Account account;
+
+    @Column(name = "transaction_code", nullable = false)
+    private String transactionCode;
 }

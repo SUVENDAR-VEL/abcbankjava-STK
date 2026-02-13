@@ -1,9 +1,6 @@
 package com.abcbankfinal.abcbankweb.controller;
 
-import com.abcbankfinal.abcbankweb.dto.LostCardListByAccountRequestDTO;
-import com.abcbankfinal.abcbankweb.dto.LostCardListRequestDTO;
-import com.abcbankfinal.abcbankweb.dto.LostCardResponseDTO;
-import com.abcbankfinal.abcbankweb.dto.LostCardSaveRequestDTO;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +23,7 @@ public class LostCardStolenController {
         return lostCardStolenService.saveLostCard(request);
     }
 
-    @PostMapping("/lastRequestList")
+    @PostMapping("/lostRequestList")
     public ApiResponse<List<LostCardResponseDTO>> getByAccountNumber(
             @RequestBody LostCardListByAccountRequestDTO request) {
 
@@ -42,9 +39,17 @@ public class LostCardStolenController {
     }
 
 
-    @GetMapping("/lastCardBy/{id}")
+    @GetMapping("/lostCardBy/{id}")
     public ApiResponse<LostCardResponseDTO> getById(@PathVariable Long id) {
         return lostCardStolenService.getById(id);
 
+    }
+
+    @PostMapping("/lostCardUpdateAdmin/{id}")
+    public ApiResponse<String> updateLostCard(
+            @PathVariable Long id,
+            @RequestBody LostCardUpdateRequestDTO request) {
+
+        return lostCardStolenService.updateLostCard(id, request);
     }
 }

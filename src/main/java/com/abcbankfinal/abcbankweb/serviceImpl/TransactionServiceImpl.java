@@ -46,6 +46,7 @@ public class TransactionServiceImpl implements TransactionService {
             dto.setTransactionType(tx.getTransactionType());
             dto.setTransactionedAmount(tx.getTransactionedAmount());
             dto.setClosingBalance(tx.getClosingBalance());
+            dto.setClosingBalance(tx.getClosingBalance());
             return dto;
         }).toList();
 
