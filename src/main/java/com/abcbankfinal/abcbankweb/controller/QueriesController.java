@@ -17,7 +17,6 @@ import java.util.List;
 @CrossOrigin("*")
 public class QueriesController {
 
-
     @Autowired
     private QueriesService queriesService;
 
@@ -32,4 +31,19 @@ public class QueriesController {
     getByAccountNumber(@PathVariable Long accountNumber) {
         return queriesService.getByAccountNumber(accountNumber);
     }
+
+    @PutMapping("update/{id}")
+    public ApiResponse<QueriesResponseDto>
+    updateQueryStatus(@PathVariable Long id, @RequestParam String status) {
+        return queriesService.updateQueryStatus(id, status);
+    }
+    @PostMapping("/adminQueriesList")
+    public ApiResponse<List<QueriesResponseDto>> getAllQueries() {
+        return queriesService.getAllQueries();
+    }
+    @GetMapping("/queryById/{id}")
+    public ApiResponse<QueriesResponseDto> getQueryById(@PathVariable Long id) {
+        return queriesService.getQueryById(id);
+    }
 }
+

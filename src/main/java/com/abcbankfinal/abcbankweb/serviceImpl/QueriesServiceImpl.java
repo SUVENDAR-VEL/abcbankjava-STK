@@ -1,7 +1,4 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
-
-
-
 import com.abcbankfinal.abcbankweb.dto.QueriesResponseDto;
 import com.abcbankfinal.abcbankweb.dto.QueriesSaveDto;
 import com.abcbankfinal.abcbankweb.model.Account;
@@ -26,8 +23,7 @@ public class QueriesServiceImpl implements QueriesService {
     @Override
     public ApiResponse<QueriesResponseDto> save(QueriesSaveDto dto) {
 
-        Account account = accountRepository
-                .findById(dto.getAccountNumber())
+        Account account = accountRepository.findById(dto.getAccountNumber())
                 .orElseThrow(() -> new RuntimeException("Account Not Found"));
 
         Queries query = new Queries();
@@ -38,16 +34,13 @@ public class QueriesServiceImpl implements QueriesService {
 
         Queries saved = queriesRepository.save(query);
 
-        QueriesResponseDto res = mapToDto(saved);
-
-        return new ApiResponse<>(true, "Query Saved Successfully", res);
+        return new ApiResponse<>(true, "Query Saved Successfully", mapToDto(saved));
     }
 
     @Override
     public ApiResponse<List<QueriesResponseDto>> getByAccountNumber(Long accountNumber) {
 
-        List<Queries> list =
-                queriesRepository.findByAccountAccountNumber(accountNumber);
+        List<Queries> list = queriesRepository.findByAccountAccountNumber(accountNumber);
 
         if (list.isEmpty()) {
             return new ApiResponse<>(false, "No Queries Found", null);
@@ -59,22 +52,59 @@ public class QueriesServiceImpl implements QueriesService {
         return new ApiResponse<>(true, "Queries Fetched Successfully", response);
     }
 
+    @Override
+    public ApiResponse<QueriesResponseDto> updateQueryStatus(Long id, String status) {
+
+        Queries queries = queriesRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Query Not Found"));
+
+        queries.setStatus(status);
+        queries.setQueryApprovedDate(LocalDate.now());
+        queries.setQueryApprovedBy(1); // temp admin id
+
+        Queries updated = queriesRepository.save(queries);
+
+        return new ApiResponse<>(true, "Query Updated Successfully", mapToDto(updated));
+    }
+
+    @Override
+    public ApiResponse<List<QueriesResponseDto>> getAllQueries() {
+
+        List<Queries> list = queriesRepository.findAll();
+
+        if (list.isEmpty()) {
+            return new ApiResponse<>(false, "No Queries Found", null);
+        }
+
+        List<QueriesResponseDto> response =
+                list.stream().map(this::mapToDto).toList();
+
+        return new ApiResponse<>(true, "Queries Fetched Successfully", response);
+    }
+
+    @Override
+    public ApiResponse<QueriesResponseDto> getQueryById(Long id) {
+
+        Queries queries = queriesRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Query Not Found"));
+
+        return new ApiResponse<>(true, "Query fetched successfully", mapToDto(queries));
+    }
+
     private QueriesResponseDto mapToDto(Queries q) {
 
         QueriesResponseDto dto = new QueriesResponseDto();
-
         dto.setQueriesId(q.getQueriesId());
         dto.setCustomerQuery(q.getCustomerQuery());
         dto.setQueryRaisedDate(q.getQueryRaisedDate());
-
         dto.setQueryResponse(q.getQueryResponse());
         dto.setQueryApprovedBy(q.getQueryApprovedBy());
         dto.setQueryApprovedDate(q.getQueryApprovedDate());
-
         dto.setStatus(q.getStatus());
-        dto.setAccountNumber(
-                q.getAccount().getAccountNumber()
-        );
+
+        if (q.getAccount() != null) {
+            dto.setAccountNumber(q.getAccount().getAccountNumber());
+        }
         return dto;
     }
 }

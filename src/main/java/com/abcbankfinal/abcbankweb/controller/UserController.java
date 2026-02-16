@@ -47,7 +47,5 @@ public class UserController {
             @RequestBody LoginRequestDTO request) {
         return userService.login(request);
     }
-
-
 }
 
