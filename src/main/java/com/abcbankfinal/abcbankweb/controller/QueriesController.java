@@ -37,10 +37,12 @@ public class QueriesController {
     updateQueryStatus(@PathVariable Long id, @RequestParam String status) {
         return queriesService.updateQueryStatus(id, status);
     }
+
     @PostMapping("/adminQueriesList")
     public ApiResponse<List<QueriesResponseDto>> getAllQueries() {
         return queriesService.getAllQueries();
     }
+
     @GetMapping("/queryById/{id}")
     public ApiResponse<QueriesResponseDto> getQueryById(@PathVariable Long id) {
         return queriesService.getQueryById(id);

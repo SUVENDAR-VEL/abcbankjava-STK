@@ -183,14 +183,13 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
             lostCard.setStatus("Active");
             lostCard.setRemarks(null);
         }
-        else if ("Rejected".equalsIgnoreCase(request.getAction())) {
-            lostCard.setStatus("Rejected");
+        else if ("Reject".equalsIgnoreCase(request.getAction())) {
+            lostCard.setStatus("Reject");
             lostCard.setRemarks(request.getRemarks()); // optional
         }
         else {
             throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
         }
-
         lostCardRepo.save(lostCard);
         return new ApiResponse<>(true, "Lost card Status updated successfully",null);
     }
