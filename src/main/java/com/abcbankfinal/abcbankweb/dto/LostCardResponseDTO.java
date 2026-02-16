@@ -8,23 +8,22 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class LostCardResponseDTO {
 
-    private Long lostCardId;              // 1
-    private Long lostCardNumber;           // 2
+    private Long lostCardId;
+    private Long lostCardNumber;
     private LocalDate lostCardStolenDate;
     private String status;
     private String remarks;
-    private Long accountNumber;             // 6
+    private Long accountNumber;
     private LocalDate createdDate;
-    private User approvedBy;
+    private Long approvedById;
     private LocalDate approvedDate;
     private String fullName;
     private String mobileNumber;
     private String city;
     private String email;
-
-
+    private String approvedByName;
 }
