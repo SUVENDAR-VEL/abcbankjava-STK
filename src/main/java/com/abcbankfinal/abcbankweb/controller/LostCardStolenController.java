@@ -31,7 +31,7 @@ public class LostCardStolenController {
 
 
     @PostMapping("/adminLastCardList")
-    public ApiResponse<Page<LostCardResponseDTO>> listLostCards(
+    public ApiResponse<PageResponse<LostCardResponseDTO>> listLostCards(
             @RequestBody LostCardListRequestDTO request) {
 
         return lostCardStolenService.getAllLostCards(request);

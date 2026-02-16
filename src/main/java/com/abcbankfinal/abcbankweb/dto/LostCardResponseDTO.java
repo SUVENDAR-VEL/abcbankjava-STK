@@ -21,6 +21,9 @@ public class LostCardResponseDTO {
     private Long approvedBy;
     private LocalDate approvedDate;
     private String fullName;
+    private String mobileNumber;
+    private String city;
+    private String email;
 
 
 }
