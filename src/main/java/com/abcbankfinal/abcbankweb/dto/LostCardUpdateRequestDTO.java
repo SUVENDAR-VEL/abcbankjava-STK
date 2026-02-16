@@ -7,4 +7,5 @@ public class LostCardUpdateRequestDTO {
 
     private String action;
     private String remarks;
+    private Long approvedById;
 }

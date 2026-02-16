@@ -24,8 +24,13 @@ public class LostCardStolen {
     @Column(name = "created_date")
     private LocalDate createdDate;
 
-    @Column(name = "approved_by")
-    private Long approvedBy;
+//    @Column(name = "approved_by")
+//    private Long approvedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private User approvedBy;
+
 
     @Column(name = "approved_date")
     private LocalDate approvedDate;

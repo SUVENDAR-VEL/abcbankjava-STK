@@ -3,8 +3,10 @@ package com.abcbankfinal.abcbankweb.serviceImpl;
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.model.LostCardStolen;
+import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.repository.AccountRepository;
 import com.abcbankfinal.abcbankweb.repository.LostCardStolenRepository;
+import com.abcbankfinal.abcbankweb.repository.UserRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
 import jakarta.transaction.Transactional;
@@ -25,6 +27,9 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
     private final LostCardStolenRepository lostCardRepo;
     private final AccountRepository accountRepo;
+
+
+    private final UserRepository userRepository;
 
 
     @Override
@@ -167,31 +172,124 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
 
 
+//    @Transactional
+//    public ApiResponse<String> updateLostCard(
+//            Long id,
+//            LostCardUpdateRequestDTO request) {
+//
+//        LostCardStolen lostCard = lostCardRepo.findById(id)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Lost Card not found with ID: " + id)
+//                );
+//        lostCard.setApprovedBy(1L);
+//        lostCard.setApprovedDate(LocalDate.now());
+//
+//        if ("Approved ".equalsIgnoreCase(request.getAction())) {
+//            lostCard.setStatus("Approved");
+//            lostCard.setRemarks(null);
+//        }
+//        else if ("Reject".equalsIgnoreCase(request.getAction())) {
+//            lostCard.setStatus("Reject");
+//            lostCard.setRemarks(request.getRemarks()); // optional
+//        }
+//        else {
+//            throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
+//        }
+//        lostCardRepo.save(lostCard);
+//        return new ApiResponse<>(true, "Lost card Status updated successfully",null);
+//    }
+
+
+//    @Transactional
+//    public ApiResponse<String> updateLostCard(
+//            Long id,
+//            LostCardUpdateRequestDTO request) {
+//
+//        LostCardStolen lostCard = lostCardRepo.findById(id)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Lost Card not found with ID: " + id)
+//                );
+//
+//        // 🔥 Fetch user with ID = 1
+//        User user = userRepository.findById(1L)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        lostCard.setApprovedBy(user);   // ✅ set User object
+//        lostCard.setApprovedDate(LocalDate.now());
+//
+//        // ⚠ Remove extra space after Approved
+//        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
+//
+//            lostCard.setStatus("Approved");
+//            lostCard.setRemarks(null);
+//
+//        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
+//
+//            lostCard.setStatus("Rejected");
+//            lostCard.setRemarks(request.getRemarks());
+//
+//        } else {
+//            throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
+//        }
+//
+//        lostCardRepo.save(lostCard);
+//
+//        return new ApiResponse<>(
+//                true,
+//                "Lost card status updated successfully",
+//                null
+//        );
+//    }
+
+
+
     @Transactional
+    @Override
     public ApiResponse<String> updateLostCard(
             Long id,
             LostCardUpdateRequestDTO request) {
 
+        // 1️⃣ Fetch Lost Card
         LostCardStolen lostCard = lostCardRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException("Lost Card not found with ID: " + id)
                 );
-        lostCard.setApprovedBy(1L);
+
+        // 2️⃣ Fetch Approved User using approvedById
+        User user = userRepository.findById(request.getApprovedById())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with ID: " + request.getApprovedById())
+                );
+
+        // 3️⃣ Set Approved Details
+        lostCard.setApprovedBy(user);
         lostCard.setApprovedDate(LocalDate.now());
 
-        if ("Approved ".equalsIgnoreCase(request.getAction())) {
+        // 4️⃣ Update Status
+        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
+
             lostCard.setStatus("Approved");
             lostCard.setRemarks(null);
-        }
-        else if ("Reject".equalsIgnoreCase(request.getAction())) {
-            lostCard.setStatus("Reject");
-            lostCard.setRemarks(request.getRemarks()); // optional
-        }
-        else {
+
+        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
+
+            lostCard.setStatus("Rejected");
+            lostCard.setRemarks(request.getRemarks());
+
+        } else {
             throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
         }
+
+
         lostCardRepo.save(lostCard);
-        return new ApiResponse<>(true, "Lost card Status updated successfully",null);
+
+        return new ApiResponse<>(
+                true,
+                "Lost card status updated successfully",
+                null
+        );
     }
+
+
 }
 

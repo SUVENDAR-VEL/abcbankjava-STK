@@ -1,5 +1,6 @@
 package com.abcbankfinal.abcbankweb.dto;
 
+import com.abcbankfinal.abcbankweb.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class LostCardResponseDTO {
     private String remarks;
     private Long accountNumber;             // 6
     private LocalDate createdDate;
-    private Long approvedBy;
+    private User approvedBy;
     private LocalDate approvedDate;
     private String fullName;
     private String mobileNumber;
