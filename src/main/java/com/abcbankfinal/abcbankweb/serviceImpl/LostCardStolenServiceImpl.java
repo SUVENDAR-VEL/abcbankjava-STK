@@ -171,40 +171,6 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         );
     }
 
-
-
-
-//    @Override
-//    public ApiResponse<LostCardResponseDTO> getById(Long id) {
-//
-//        LostCardStolen lostCard = lostCardRepo.findById(id)
-//                .orElseThrow(() ->
-//                        new RuntimeException("Lost Card not found with ID: " + id)
-//                );
-//
-//        LostCardResponseDTO response = new LostCardResponseDTO(
-//                lostCard.getLostCardId(),
-//                lostCard.getLostCardNumber(),
-//                lostCard.getLostCardStolenDate(),
-//                lostCard.getStatus(),
-//                lostCard.getRemarks(),
-//                lostCard.getAccount().getAccountNumber(),
-//                lostCard.getCreatedDate(),
-//                lostCard.getApprovedBy(),
-//                lostCard.getApprovedDate(), lostCard.getAccount().getCustomer().getFirstName() + " " +
-//                lostCard.getAccount().getCustomer().getLastName(),lostCard.getAccount().getCustomer().getMobileNumber(),
-//                lostCard.getAccount().getCustomer().getCity(),lostCard.getAccount().getCustomer().getEmail()
-//
-//        );
-//        return new ApiResponse<>(
-//                true,
-//                "Lost card fetched successfully",
-//                response
-//        );
-//    }
-
-
-
     @Override
     public ApiResponse<LostCardResponseDTO> getById(Long id) {
 
