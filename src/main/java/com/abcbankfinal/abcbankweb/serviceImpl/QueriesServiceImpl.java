@@ -61,7 +61,6 @@ public class QueriesServiceImpl implements QueriesService {
         queries.setStatus(status);
         queries.setQueryApprovedDate(LocalDate.now());
         queries.setQueryApprovedBy(1); // temp admin id
-
         Queries updated = queriesRepository.save(queries);
 
         return new ApiResponse<>(true, "Query Updated Successfully", mapToDto(updated));
@@ -69,13 +68,10 @@ public class QueriesServiceImpl implements QueriesService {
 
     @Override
     public ApiResponse<List<QueriesResponseDto>> getAllQueries() {
-
         List<Queries> list = queriesRepository.findAll();
-
         if (list.isEmpty()) {
             return new ApiResponse<>(false, "No Queries Found", null);
         }
-
         List<QueriesResponseDto> response =
                 list.stream().map(this::mapToDto).toList();
 

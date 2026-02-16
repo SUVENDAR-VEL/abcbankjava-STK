@@ -179,8 +179,8 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         lostCard.setApprovedBy(1L);
         lostCard.setApprovedDate(LocalDate.now());
 
-        if ("Active".equalsIgnoreCase(request.getAction())) {
-            lostCard.setStatus("Active");
+        if ("Approved ".equalsIgnoreCase(request.getAction())) {
+            lostCard.setStatus("Approved");
             lostCard.setRemarks(null);
         }
         else if ("Reject".equalsIgnoreCase(request.getAction())) {
