@@ -1,14 +1,18 @@
 package com.abcbankfinal.abcbankweb.repository;
 
-
 import com.abcbankfinal.abcbankweb.model.Queries;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public interface QueriesRepository extends JpaRepository<Queries, Long> {
 
-    List<Queries> findByAccountAccountNumber(Long accountNumber);
+    List<Queries> findByAccount_AccountNumber(Long accountNumber);
+
+    Page<Queries> findByStatus(String status, Pageable pageable);
+
+    long countByStatusIgnoreCase(
+            String status);
 }

@@ -1,7 +1,6 @@
 package com.abcbankfinal.abcbankweb.service;
 
-import com.abcbankfinal.abcbankweb.dto.CreditLimitIncreaseResponseDto;
-import com.abcbankfinal.abcbankweb.dto.CreditLimitIncreaseSaveDto;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 
 import java.util.List;
@@ -9,8 +8,26 @@ import java.util.List;
 public interface CreditCardLimitIncreaseService {
 
     ApiResponse<CreditLimitIncreaseResponseDto>
-    save(CreditLimitIncreaseSaveDto dto);
+    saveCreditLimitIncrease(
+            CreditLimitIncreaseSaveDto dto);
 
     ApiResponse<List<CreditLimitIncreaseResponseDto>>
-    getByAccountNumber(Long accountNumber);
+    getByAccountNumber(
+            Long accountNumber);
+
+    ApiResponse<PageResponse<CreditLimitIncreaseResponseDto>>
+    getAllCreditLimitIncreases(
+            CreditLimitIncreaseListRequestDTO request);
+
+    ApiResponse<CreditLimitIncreaseResponseDto>
+    getCreditLimitIncreaseById(
+            Long id);
+
+    ApiResponse<String>
+    updateCreditLimitIncreaseStatus(
+            Long id,
+            CreditLimitIncreaseUpdateDTO request);
+
+    ApiResponse<RequestCountDto>
+    getCreditLimitIncreaseCounts();
 }

@@ -17,4 +17,7 @@ public interface LostCardStolenService {
     ApiResponse<String> updateLostCard(Long id, LostCardUpdateRequestDTO request);
 
     ApiResponse<PageResponse<LostCardResponseDTO>> getAllLostCards(LostCardListRequestDTO request);
+
+    ApiResponse<RequestCountDto>
+    getLostCardCounts();
 }

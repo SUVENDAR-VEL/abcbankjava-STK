@@ -1,51 +1,66 @@
 package com.abcbankfinal.abcbankweb.controller;
 
-
-import com.abcbankfinal.abcbankweb.dto.QueriesResponseDto;
-import com.abcbankfinal.abcbankweb.dto.QueriesSaveDto;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
-import com.abcbankfinal.abcbankweb.service.QueriesService;
+import com.abcbankfinal.abcbankweb.service.QueriesResponseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/queriesRequest")
+@RequestMapping("/api/queriesResponse")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class QueriesController {
 
-    @Autowired
-    private QueriesService queriesService;
+    private final QueriesResponseService queriesService;
 
     @PostMapping("/save")
-    public ApiResponse<QueriesResponseDto> save(
+    public ApiResponse<QueriesResponseDto> saveQuery(
             @RequestBody QueriesSaveDto dto) {
-        return queriesService.save(dto);
+
+        return queriesService.saveQuery(dto);
     }
 
-    @GetMapping("/getBy/{accountNumber}")
+    @PostMapping("/queriesList")
     public ApiResponse<List<QueriesResponseDto>>
-    getByAccountNumber(@PathVariable Long accountNumber) {
-        return queriesService.getByAccountNumber(accountNumber);
-    }
+    getByAccountNumber(
+            @RequestBody QueriesListByAccountRequestDto request) {
 
-    @PutMapping("update/{id}")
-    public ApiResponse<QueriesResponseDto>
-    updateQueryStatus(@PathVariable Long id, @RequestParam String status) {
-        return queriesService.updateQueryStatus(id, status);
+        return queriesService
+                .getByAccountNumber(
+                        request.getAccountNumber());
     }
 
     @PostMapping("/adminQueriesList")
-    public ApiResponse<List<QueriesResponseDto>> getAllQueries() {
-        return queriesService.getAllQueries();
+    public ApiResponse<PageResponse<QueriesResponseDto>>
+    listQueries(
+            @RequestBody QueriesListRequestDto request) {
+
+        return queriesService.getAllQueries(request);
     }
 
-    @GetMapping("/queryById/{id}")
-    public ApiResponse<QueriesResponseDto> getQueryById(@PathVariable Long id) {
+    @GetMapping("/queryBy/{id}")
+    public ApiResponse<QueriesResponseDto>
+    getQueryById(@PathVariable Long id) {
+
         return queriesService.getQueryById(id);
     }
-}
 
+    @PostMapping("/queryUpdateAdmin/{id}")
+    public ApiResponse<String> updateQueryStatus(
+            @PathVariable Long id,
+            @RequestBody QueriesUpdateRequestDto request) {
+
+        return queriesService
+                .updateQueryStatus(id, request);
+    }
+
+    @GetMapping("/count")
+    public ApiResponse<RequestCountDto>
+    getQueriesCounts() {
+
+        return queriesService.getQueriesCounts();
+    }
+}

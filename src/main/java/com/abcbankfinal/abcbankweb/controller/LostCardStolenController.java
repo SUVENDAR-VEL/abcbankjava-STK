@@ -50,4 +50,12 @@ public class LostCardStolenController {
             @RequestBody LostCardUpdateRequestDTO request) {
         return lostCardStolenService.updateLostCard(id, request);
     }
+
+    @GetMapping("/count")
+    public ApiResponse<RequestCountDto>
+    getLostCardCounts() {
+
+        return lostCardStolenService
+                .getLostCardCounts();
+    }
 }

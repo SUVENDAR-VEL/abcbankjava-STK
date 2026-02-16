@@ -4,15 +4,18 @@ import com.abcbankfinal.abcbankweb.model.ChequeRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+public interface ChequeRequestRepository
+        extends JpaRepository<ChequeRequest, Integer> {
 
-@Repository
-public interface ChequeRequestRepository extends JpaRepository<ChequeRequest, Integer> {
+    List<ChequeRequest> findByAccount_AccountNumber(
+            Long accountNumber);
 
-    List<ChequeRequest> findByAccount_AccountNumber(Long accountNumber);
+    Page<ChequeRequest> findByStatus(
+            String status,
+            Pageable pageable);
 
-    Page<ChequeRequest> findByStatus(String status, Pageable pageable);
+    long countByStatusIgnoreCase(String status);
 }
