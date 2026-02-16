@@ -69,7 +69,8 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                                 lc.getAccount().getAccountNumber(),
                                 lc.getCreatedDate(),
                                 lc.getApprovedBy(),
-                                lc.getApprovedDate()
+                                lc.getApprovedDate(),lc.getAccount().getCustomer().getFirstName() + " " +
+                                lc.getAccount().getCustomer().getLastName()
                         ))
                         .toList();
 
@@ -96,6 +97,19 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                     pageable
             );
         }
+//        Page<LostCardResponseDTO> response =
+//                resultPage.map(lc -> new LostCardResponseDTO(
+//                        lc.getLostCardId(),
+//                        lc.getLostCardNumber(),
+//                        lc.getLostCardStolenDate(),
+//                        lc.getStatus(),
+//                        lc.getRemarks(),
+//                        lc.getAccount().getAccountNumber(),
+//                        lc.getCreatedDate(),
+//                        lc.getApprovedBy(),
+//                        lc.getApprovedDate(),lc.getAccount().getCustomer().getFirstName() + " " + lc.getAccount().getCustomer().getLastName(),
+//                ));
+
         Page<LostCardResponseDTO> response =
                 resultPage.map(lc -> new LostCardResponseDTO(
                         lc.getLostCardId(),
@@ -106,8 +120,11 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                         lc.getAccount().getAccountNumber(),
                         lc.getCreatedDate(),
                         lc.getApprovedBy(),
-                        lc.getApprovedDate()
+                        lc.getApprovedDate(),
+                        lc.getAccount().getCustomer().getFirstName() + " " +
+                                lc.getAccount().getCustomer().getLastName()
                 ));
+
 
         return new ApiResponse<>(
                 true,
@@ -134,7 +151,8 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                 lostCard.getAccount().getAccountNumber(),
                 lostCard.getCreatedDate(),
                 lostCard.getApprovedBy(),
-                lostCard.getApprovedDate()
+                lostCard.getApprovedDate(), lostCard.getAccount().getCustomer().getFirstName() + " " +
+                lostCard.getAccount().getCustomer().getLastName()
         );
         return new ApiResponse<>(
                 true,

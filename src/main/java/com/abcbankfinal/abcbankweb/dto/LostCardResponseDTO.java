@@ -13,11 +13,14 @@ public class LostCardResponseDTO {
 
     private Long lostCardId;              // 1
     private Long lostCardNumber;           // 2
-    private LocalDate lostCardStolenDate;  // 3
-    private String status;                 // 4
-    private String remarks;                // 5
+    private LocalDate lostCardStolenDate;
+    private String status;
+    private String remarks;
     private Long accountNumber;             // 6
-    private LocalDate createdDate;          // 7
-    private Long approvedBy;                // 8
-    private LocalDate approvedDate;         // 9
+    private LocalDate createdDate;
+    private Long approvedBy;
+    private LocalDate approvedDate;
+    private String fullName;
+
+
 }
