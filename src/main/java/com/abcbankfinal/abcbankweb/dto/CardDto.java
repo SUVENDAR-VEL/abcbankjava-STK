@@ -1,7 +1,6 @@
 package com.abcbankfinal.abcbankweb.dto;
 
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Data
@@ -15,6 +14,6 @@ public class CardDto {
     private String status;
     private Double maxLimit;
 
-    private String cardTypeName;   // From CardType
-    private Long accountNumber;    // From Account
+    private String cardTypeName;
+    private Long accountNumber;
 }
