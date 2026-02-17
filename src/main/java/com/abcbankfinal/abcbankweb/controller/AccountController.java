@@ -4,6 +4,7 @@ import com.abcbankfinal.abcbankweb.dto.AccountResponseDto;
 import com.abcbankfinal.abcbankweb.dto.CardDto;
 import com.abcbankfinal.abcbankweb.dto.TransactionResponseDto;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import com.abcbankfinal.abcbankweb.service.AccountFullDetailsProjection;
 import com.abcbankfinal.abcbankweb.service.AccountService;
 import com.abcbankfinal.abcbankweb.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -50,4 +51,12 @@ public class AccountController {
                 transactionService.getCardsByAccountNumber(accountNumber)
         );
     }
+
+
+    @GetMapping("/userDataBy/{accountNumber}")
+    public AccountFullDetailsProjection getAccountDetails(
+            @PathVariable Long accountNumber) {
+        return accountService.getAccountFullDetails(accountNumber);
+    }
+
 }

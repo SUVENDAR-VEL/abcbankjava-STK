@@ -181,24 +181,14 @@ public class UserServiceImpl implements UserService {
     }
 
 
-//    @Override
-//    public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
-//
-//        Pageable pageable = PageRequest.of(
-//                request.getPage(),
-//                request.getSize(),
-//                Sort.by("u.user_id").descending()
-//        );
-//
-//        return accountRepository.searchUsers(
-//                request.getStatus(),
-//                pageable
-//        );
-//    }
-
-
     @Override
     public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
+
+        String status = request.getStatus();
+
+        if (status != null && status.trim().isEmpty()) {
+            status = null;
+        }
 
         Pageable pageable = PageRequest.of(
                 request.getPage(),
@@ -206,11 +196,12 @@ public class UserServiceImpl implements UserService {
         );
 
         return accountRepository.searchUsers(
-                request.getStatus(),
+                status,
                 request.getRoleId(),
                 pageable
         );
     }
+
 
 }
 

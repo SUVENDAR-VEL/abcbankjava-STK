@@ -50,11 +50,10 @@ public class UserController {
         return userService.login(request);
     }
 
-    @PostMapping("/search")
+    @PostMapping("/getAllUser/search")
     public Page<UserAccountListProjection> searchUsers(
             @RequestBody UserSearchRequest request) {
         return userService.searchUsers(request);
     }
-
 }
 

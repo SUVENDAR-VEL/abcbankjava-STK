@@ -9,4 +9,6 @@ public interface AccountService {
 
     ApiResponse<List<AccountResponseDto>> getAccountsByUserId(Long userId);
 
+    AccountFullDetailsProjection getAccountFullDetails(Long accountNumber);
+
 }
