@@ -14,5 +14,10 @@ public class ChequeRequestDto {
     private String status;
     private String remarks;
     private Long accountNumber;
+    private String fullName;
+    private String mobileNumber;
+    private String city;
+    private String email;
+    private String approvedByName;
 
 }

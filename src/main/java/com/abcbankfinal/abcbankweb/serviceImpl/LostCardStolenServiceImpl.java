@@ -266,6 +266,33 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         );
     }
 
+    @Override
+    public ApiResponse<RequestCountDto>
+    getLostCardCounts() {
 
+        RequestCountDto dto =
+                new RequestCountDto();
+
+        dto.setTotal(
+                lostCardRepo.count());
+
+        dto.setApproved(
+                lostCardRepo.countByStatusIgnoreCase(
+                        "APPROVED"));
+
+        dto.setRejected(
+                lostCardRepo.countByStatusIgnoreCase(
+                        "REJECTED"));
+
+        dto.setPending(
+                lostCardRepo.countByStatusIgnoreCase(
+                        "PENDING"));
+
+        return new ApiResponse<>(
+                true,
+                "Lost card request counts fetched successfully",
+                dto
+        );
+    }
 }
 

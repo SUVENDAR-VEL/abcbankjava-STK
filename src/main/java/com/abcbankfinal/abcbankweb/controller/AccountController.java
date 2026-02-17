@@ -1,8 +1,10 @@
 package com.abcbankfinal.abcbankweb.controller;
 
+import com.abcbankfinal.abcbankweb.dto.AccountResponseDto;
 import com.abcbankfinal.abcbankweb.dto.CardDto;
 import com.abcbankfinal.abcbankweb.dto.TransactionResponseDto;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import com.abcbankfinal.abcbankweb.service.AccountService;
 import com.abcbankfinal.abcbankweb.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,18 @@ public class AccountController {
 
     @Autowired
     TransactionService transactionService;
+
+    @Autowired
+    AccountService accountService;
+
+    @GetMapping("/userAccounts/{userId}")
+    public ResponseEntity<ApiResponse<List<AccountResponseDto>>>
+    getAccountsByUserId(@PathVariable Long userId) {
+
+        return ResponseEntity.ok(
+                accountService.getAccountsByUserId(userId)
+        );
+    }
 
     @GetMapping("/transactions/{accountNumber}")
     public ResponseEntity<ApiResponse<List<TransactionResponseDto>>>

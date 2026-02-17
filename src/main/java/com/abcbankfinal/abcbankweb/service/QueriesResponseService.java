@@ -1,18 +1,28 @@
 package com.abcbankfinal.abcbankweb.service;
 
-import com.abcbankfinal.abcbankweb.dto.QueriesResponseDto;
+import com.abcbankfinal.abcbankweb.dto.*;
+import com.abcbankfinal.abcbankweb.response.ApiResponse;
 
 import java.util.List;
 
 public interface QueriesResponseService {
 
-    List<QueriesResponseDto> getAllQueries();
+    ApiResponse<QueriesResponseDto> saveQuery(
+            QueriesSaveDto dto);
 
-    QueriesResponseDto getQueryById(Long queryId);
+    ApiResponse<List<QueriesResponseDto>> getByAccountNumber(
+            Long accountNumber);
 
-    List<QueriesResponseDto> getQueriesByStatus(String status);
+    ApiResponse<PageResponse<QueriesResponseDto>> getAllQueries(
+            QueriesListRequestDto request);
 
-    List<QueriesResponseDto> getQueriesByAccountNumber(Long accountNumber);
+    ApiResponse<QueriesResponseDto> getQueryById(
+            Long queryId);
 
-    QueriesResponseDto updateQueryStatus(Long id, String status);
+    ApiResponse<String> updateQueryStatus(
+            Long queryId,
+            QueriesUpdateRequestDto request);
+
+    ApiResponse<RequestCountDto>
+    getQueriesCounts();
 }

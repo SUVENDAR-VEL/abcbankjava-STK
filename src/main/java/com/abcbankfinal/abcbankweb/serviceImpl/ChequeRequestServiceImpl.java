@@ -1,84 +1,101 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
 
-import com.abcbankfinal.abcbankweb.dto.ChequeListRequestDTO;
-import com.abcbankfinal.abcbankweb.dto.ChequeRequestDto;
-import com.abcbankfinal.abcbankweb.dto.ChequeUpdateRequestDTO;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.model.ChequeRequest;
+import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.repository.AccountRepository;
 import com.abcbankfinal.abcbankweb.repository.ChequeRequestRepository;
+import com.abcbankfinal.abcbankweb.repository.UserRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.ChequeRequestService;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ChequeRequestServiceImpl implements ChequeRequestService {
 
-    private final ChequeRequestRepository chequeRequestRepository;
-    private final AccountRepository accountRepository;
+    private final ChequeRequestRepository chequeRepo;
+    private final AccountRepository accountRepo;
+    private final UserRepository userRepository;
 
-    public ChequeRequestServiceImpl(ChequeRequestRepository chequeRequestRepository, AccountRepository accountRepository) {
-        this.chequeRequestRepository = chequeRequestRepository;
-        this.accountRepository = accountRepository;
-    }
+    // -------------------------------------------------------
+    // SAVE
+    // -------------------------------------------------------
 
     @Override
     public ApiResponse<ChequeRequestDto> saveChequeRequest(
             ChequeRequestDto dto) {
 
-        Account account = accountRepository
-                .findById(dto.getAccountNumber())
+        Account account = accountRepo.findById(
+                        dto.getAccountNumber())
                 .orElseThrow(() ->
-                        new RuntimeException("Account Not Found"));
+                        new RuntimeException("Account not found"));
 
-        ChequeRequest request = new ChequeRequest();
-        request.setNoOfLeaves(dto.getNoOfLeaves());
-        request.setRequestedDate(LocalDate.now());
-        request.setStatus("Pending");
-        request.setAccount(account);
+        ChequeRequest entity = new ChequeRequest();
+        entity.setNoOfLeaves(dto.getNoOfLeaves());
+        entity.setRequestedDate(LocalDate.now());
+        entity.setStatus("Pending");
+        entity.setAccount(account);
 
-        ChequeRequest saved =
-                chequeRequestRepository.save(request);
-
-        ChequeRequestDto responseDto =
-                new ChequeRequestDto();
-
-        responseDto.setChequeRequestId(
-                saved.getChequeRequestId());
-        responseDto.setNoOfLeaves(
-                saved.getNoOfLeaves());
-        responseDto.setRequestedDate(
-                saved.getRequestedDate());
-        responseDto.setStatus(saved.getStatus());
-        responseDto.setAccountNumber(
-                saved.getAccount().getAccountNumber());
+        chequeRepo.save(entity);
 
         return new ApiResponse<>(
                 true,
                 "Cheque request submitted successfully",
-                responseDto
+                null
         );
     }
+
+    // -------------------------------------------------------
+    // LIST BY ACCOUNT NUMBER
+    // -------------------------------------------------------
 
     @Override
     public ApiResponse<List<ChequeRequestDto>>
     getByAccountNumber(Long accountNumber) {
 
         List<ChequeRequestDto> list =
-                chequeRequestRepository
-                        .findByAccount_AccountNumber(accountNumber)
+                chequeRepo.findByAccount_AccountNumber(accountNumber)
                         .stream()
                         .map(req -> {
+
+                            Integer approvedById = null;
+                            String approvedByName = null;
+
+                            if (req.getApprovedBy() != null) {
+
+                                approvedById =
+                                        req.getApprovedBy();
+
+                                User user =
+                                        userRepository.findById(
+                                                        Long.valueOf(
+                                                                approvedById))
+                                                .orElse(null);
+
+                                if (user != null) {
+                                    approvedByName =
+                                            user.getFirstName()
+                                                    + " " +
+                                                    user.getLastName();
+                                }
+                            }
+
+                            String fullName =
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getFirstName()
+                                            + " " +
+                                            req.getAccount()
+                                                    .getCustomer()
+                                                    .getLastName();
 
                             ChequeRequestDto dto =
                                     new ChequeRequestDto();
@@ -99,9 +116,25 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
                                     req.getAccount()
                                             .getAccountNumber());
 
+                            dto.setFullName(fullName);
+                            dto.setMobileNumber(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getMobileNumber());
+                            dto.setCity(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getCity());
+                            dto.setEmail(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getEmail());
+                            dto.setApprovedByName(
+                                    approvedByName);
+
                             return dto;
                         })
-                        .collect(Collectors.toList());
+                        .toList();
 
         return new ApiResponse<>(
                 true,
@@ -110,9 +143,13 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
         );
     }
 
+    // -------------------------------------------------------
+    // ADMIN LIST (PAGINATION) — SAME AS LOST CARD
+    // -------------------------------------------------------
+
     @Override
-    public ApiResponse<Page<ChequeRequestDto>> getAllChequeRequests(
-            ChequeListRequestDTO request) {
+    public ApiResponse<PageResponse<ChequeRequestDto>>
+    getAllChequeRequests(ChequeListRequestDTO request) {
 
         Pageable pageable = PageRequest.of(
                 request.getPage(),
@@ -120,50 +157,146 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
                 Sort.by("requestedDate").descending()
         );
 
-        Page<ChequeRequest> pageResult;
+        Page<ChequeRequest> resultPage =
+                (request.getStatus() == null ||
+                        request.getStatus().isBlank())
+                        ? chequeRepo.findAll(pageable)
+                        : chequeRepo.findByStatus(
+                        request.getStatus().toUpperCase(),
+                        pageable);
 
-        if (request.getStatus() == null ||
-                request.getStatus().isBlank()) {
+        List<ChequeRequestDto> content =
+                resultPage.stream()
+                        .map(req -> {
 
-            pageResult = chequeRequestRepository.findAll(pageable);
-        } else {
+                            String fullName =
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getFirstName()
+                                            + " " +
+                                            req.getAccount()
+                                                    .getCustomer()
+                                                    .getLastName();
 
-            pageResult = chequeRequestRepository.findByStatus(
-                    request.getStatus(),
-                    pageable);
-        }
+                            Integer approvedById = null;
+                            String approvedByName = null;
 
-        Page<ChequeRequestDto> response =
-                pageResult.map(req -> {
-                    ChequeRequestDto dto = new ChequeRequestDto();
-                    dto.setChequeRequestId(req.getChequeRequestId());
-                    dto.setNoOfLeaves(req.getNoOfLeaves());
-                    dto.setRequestedDate(req.getRequestedDate());
-                    dto.setApprovedBy(req.getApprovedBy());
-                    dto.setApprovedDate(req.getApprovedDate());
-                    dto.setStatus(req.getStatus());
-                    dto.setRemarks(req.getRemarks());
-                    dto.setAccountNumber(
-                            req.getAccount().getAccountNumber());
-                    return dto;
-                });
+                            if (req.getApprovedBy() != null) {
+
+                                approvedById =
+                                        req.getApprovedBy();
+
+                                User user =
+                                        userRepository.findById(
+                                                        Long.valueOf(
+                                                                approvedById))
+                                                .orElse(null);
+
+                                if (user != null) {
+                                    approvedByName =
+                                            user.getFirstName()
+                                                    + " " +
+                                                    user.getLastName();
+                                }
+                            }
+
+                            ChequeRequestDto dto =
+                                    new ChequeRequestDto();
+
+                            dto.setChequeRequestId(
+                                    req.getChequeRequestId());
+                            dto.setNoOfLeaves(
+                                    req.getNoOfLeaves());
+                            dto.setRequestedDate(
+                                    req.getRequestedDate());
+                            dto.setApprovedBy(
+                                    req.getApprovedBy());
+                            dto.setApprovedDate(
+                                    req.getApprovedDate());
+                            dto.setStatus(req.getStatus());
+                            dto.setRemarks(req.getRemarks());
+                            dto.setAccountNumber(
+                                    req.getAccount()
+                                            .getAccountNumber());
+
+                            dto.setFullName(fullName);
+                            dto.setMobileNumber(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getMobileNumber());
+                            dto.setCity(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getCity());
+                            dto.setEmail(
+                                    req.getAccount()
+                                            .getCustomer()
+                                            .getEmail());
+                            dto.setApprovedByName(
+                                    approvedByName);
+
+                            return dto;
+                        })
+                        .toList();
+
+        PageResponse<ChequeRequestDto> pageResponse =
+                new PageResponse<>(
+                        content,
+                        resultPage.getNumber(),
+                        resultPage.getSize(),
+                        resultPage.getTotalElements(),
+                        resultPage.getTotalPages(),
+                        resultPage.isLast()
+                );
 
         return new ApiResponse<>(
                 true,
                 "Cheque request list fetched successfully",
-                response
+                pageResponse
         );
     }
 
-    @Override
-    public ApiResponse<ChequeRequestDto> getChequeById(Integer id) {
+    // -------------------------------------------------------
+    // GET BY ID
+    // -------------------------------------------------------
 
-        ChequeRequest req = chequeRequestRepository.findById(id)
+    @Override
+    public ApiResponse<ChequeRequestDto>
+    getChequeById(Integer id) {
+
+        ChequeRequest req = chequeRepo.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Cheque request not found: " + id));
+                                "Cheque request not found with ID: " + id));
 
-        ChequeRequestDto dto = new ChequeRequestDto();
+        Integer approvedById = null;
+        String approvedByName = null;
+
+        if (req.getApprovedBy() != null) {
+
+            approvedById = req.getApprovedBy();
+
+            User user =
+                    userRepository.findById(
+                                    Long.valueOf(approvedById))
+                            .orElse(null);
+
+            if (user != null) {
+                approvedByName =
+                        user.getFirstName()
+                                + " " +
+                                user.getLastName();
+            }
+        }
+
+        String fullName =
+                req.getAccount().getCustomer().getFirstName()
+                        + " " +
+                        req.getAccount().getCustomer().getLastName();
+
+        ChequeRequestDto dto =
+                new ChequeRequestDto();
+
         dto.setChequeRequestId(req.getChequeRequestId());
         dto.setNoOfLeaves(req.getNoOfLeaves());
         dto.setRequestedDate(req.getRequestedDate());
@@ -174,6 +307,18 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
         dto.setAccountNumber(
                 req.getAccount().getAccountNumber());
 
+        dto.setFullName(fullName);
+        dto.setMobileNumber(
+                req.getAccount().getCustomer()
+                        .getMobileNumber());
+        dto.setCity(
+                req.getAccount().getCustomer()
+                        .getCity());
+        dto.setEmail(
+                req.getAccount().getCustomer()
+                        .getEmail());
+        dto.setApprovedByName(approvedByName);
+
         return new ApiResponse<>(
                 true,
                 "Cheque request fetched successfully",
@@ -181,41 +326,85 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
         );
     }
 
-    @Override
+    // -------------------------------------------------------
+    // UPDATE STATUS
+    // -------------------------------------------------------
+
     @Transactional
-    public ApiResponse<String> updateChequeStatus(
+    @Override
+    public ApiResponse<String>
+    updateChequeStatus(
             Integer id,
             ChequeUpdateRequestDTO request) {
 
-        ChequeRequest cheque = chequeRequestRepository.findById(id)
+        ChequeRequest cheque =
+                chequeRepo.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Cheque request not found with ID: " + id));
+
+        User user = userRepository.findById(
+                        request.getApprovedById())
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Cheque request not found: " + id));
+                                "User not found with ID: "
+                                        + request.getApprovedById()));
 
-        cheque.setApprovedBy(1);
+        cheque.setApprovedBy(
+                Math.toIntExact(user.getUserId()));
         cheque.setApprovedDate(LocalDate.now());
 
-        if ("Approved".equalsIgnoreCase(request.getAction())) {
+        if ("APPROVE".equalsIgnoreCase(
+                request.getAction())) {
 
             cheque.setStatus("Approved");
             cheque.setRemarks(null);
 
-        } else if ("Rejected".equalsIgnoreCase(request.getAction())) {
+        } else if ("REJECT".equalsIgnoreCase(
+                request.getAction())) {
 
             cheque.setStatus("Rejected");
-            cheque.setRemarks(request.getRemarks());
+            cheque.setRemarks(
+                    request.getRemarks());
 
         } else {
             throw new RuntimeException(
-                    "Invalid action. Use Approved or Rejected");
+                    "Invalid action. Use APPROVE or REJECT");
         }
 
-        chequeRequestRepository.save(cheque);
+        chequeRepo.save(cheque);
 
         return new ApiResponse<>(
                 true,
                 "Cheque request status updated successfully",
                 null
+        );
+    }
+
+    @Override
+    public ApiResponse<RequestCountDto>
+    getChequeRequestCounts() {
+
+        RequestCountDto dto = new RequestCountDto();
+
+        dto.setTotal(chequeRepo.count());
+
+        dto.setApproved(
+                chequeRepo.countByStatusIgnoreCase(
+                        "APPROVED"));
+
+        dto.setRejected(
+                chequeRepo.countByStatusIgnoreCase(
+                        "REJECTED"));
+
+        dto.setPending(
+                chequeRepo.countByStatusIgnoreCase(
+                        "PENDING"));
+
+        return new ApiResponse<>(
+                true,
+                "Cheque request counts fetched successfully",
+                dto
         );
     }
 }

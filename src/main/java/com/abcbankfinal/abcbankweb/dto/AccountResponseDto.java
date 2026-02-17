@@ -1,6 +1,7 @@
 package com.abcbankfinal.abcbankweb.dto;
 
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class AccountResponseDto {
@@ -13,4 +14,5 @@ public class AccountResponseDto {
     private String state;
     private String status;
     private String accountTypeName;
+    private LocalDate openedDate;
 }
