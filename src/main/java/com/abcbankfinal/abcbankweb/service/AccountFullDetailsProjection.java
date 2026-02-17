@@ -1,30 +1,38 @@
 package com.abcbankfinal.abcbankweb.service;
 
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public interface AccountFullDetailsProjection {
 
-    // 🔹 User Details
     Long getUserId();
     String getFirstName();
     String getLastName();
     String getEmail();
     String getMobileNumber();
     String getAlternativeNumber();
+    String getAddress();
     String getCity();
     String getState();
     String getCountry();
-    String getAddress();
-
-    // 🔹 Role Details
-    Long getRoleId();
+    String getPincode();
+    String getPancard();
+    String getAadhar();
+    LocalDate getDateOfBirth();
+    LocalDateTime getCreatedDate();
+    Integer getRoleId();
     String getRoleName();
-
-    // 🔹 Account Details
     Long getAccountNumber();
     Double getBalance();
     String getAccountStatus();
     String getBranchName();
     String getBranchCode();
+    LocalDate getOpenedDate();
 
-    // 🔹 Account Type
-    String getAccountType();
+
+    Integer getAccountTypeId();
+    String getAccountTypeName();
 }
+
+
