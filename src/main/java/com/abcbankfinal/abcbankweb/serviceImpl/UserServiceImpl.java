@@ -11,8 +11,13 @@ import com.abcbankfinal.abcbankweb.repository.AccountTypeRepository;
 import com.abcbankfinal.abcbankweb.repository.RoleRepository;
 import com.abcbankfinal.abcbankweb.repository.UserRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import com.abcbankfinal.abcbankweb.service.UserAccountListProjection;
 import com.abcbankfinal.abcbankweb.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -173,6 +178,22 @@ public class UserServiceImpl implements UserService {
         );
 
         return new ApiResponse<>(true, "Login successful", response);
+    }
+
+
+    @Override
+    public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
+
+        Pageable pageable = PageRequest.of(
+                request.getPage(),
+                request.getSize(),
+                Sort.by("u.user_id").descending()
+        );
+
+        return accountRepository.searchUsers(
+                request.getStatus(),
+                pageable
+        );
     }
 }
 
