@@ -1,6 +1,5 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
 
-
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.model.AccountType;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +54,6 @@ public class UserServiceImpl implements UserService {
         user.setAadhar(request.getAadhar());
         user.setPassword("abcbank@123");
         user.setRole(role);
-
         user.setCreatedBy(1L);
         user.setCreatedDate(LocalDateTime.now());
 
@@ -79,16 +76,12 @@ public class UserServiceImpl implements UserService {
 
         accountRepository.save(account);
 
-        return new ApiResponse<>(
-                true,
-                "User Saved Successfully", null
-        );
+        return new ApiResponse<>(true,"User Saved Successfully",null);
     }
 
     private Long generateAccountNumber() {
         return 1000000000L + new Random().nextInt(900000000);
     }
-
 
     public ApiResponse<UserResponseDto> getUserById(Long userId) {
 
@@ -116,24 +109,24 @@ public class UserServiceImpl implements UserService {
             dto.setCity(acc.getCity());
             dto.setState(acc.getState());
             dto.setStatus(acc.getStatus());
+            dto.setOpenedDate(acc.getOpenedDate());
+            if (acc.getAccountType() != null) {
+                dto.setAccountTypeName(acc.getAccountType().getAccountTypeName());
+            }
             return dto;
         }).toList();
 
         response.setAccounts(accountDtos);
 
-        return new ApiResponse<>(
-                true,
-                "User Fetched Successfully",
-                response
-        );
+        return new ApiResponse<>(true,"User Fetched Successfully",response);
     }
-
 
     @Transactional
     public ApiResponse<Void> updateUser(Long userId, UserRequestDto request) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setMobileNumber(request.getMobileNumber());
@@ -150,15 +143,10 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedDate(LocalDateTime.now());
 
         userRepository.save(user);
-        return new ApiResponse<>(
-                true,
-                "User Updated Successfully",
-                null
-        );
+
+        return new ApiResponse<>(true,"User Updated Successfully",null);
     }
 
-
-    @Override
     public ApiResponse<LoginResponseDTO> login(LoginRequestDTO request) {
 
         User user = userRepository.findByEmailAndPassword(
@@ -167,7 +155,7 @@ public class UserServiceImpl implements UserService {
         );
 
         if (user == null) {
-            return new ApiResponse<>(false, "Invalid email or password", null);
+            return new ApiResponse<>(false,"Invalid email or password",null);
         }
 
         LoginResponseDTO response = new LoginResponseDTO(
@@ -177,11 +165,9 @@ public class UserServiceImpl implements UserService {
                 user.getRole().getRoleId()
         );
 
-        return new ApiResponse<>(true, "Login successful", response);
+        return new ApiResponse<>(true,"Login successful",response);
     }
 
-
-    @Override
     public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
 
         String status = request.getStatus();
@@ -202,6 +188,52 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    public ApiResponse<UserOnlyResponseDto> getUserOnlyById(Long userId) {
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        UserOnlyResponseDto dto = new UserOnlyResponseDto();
+        dto.setUserId(user.getUserId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setMobileNumber(user.getMobileNumber());
+        dto.setDateOfBirth(user.getDateOfBirth());
+        dto.setAddress(user.getAddress());
+        dto.setCity(user.getCity());
+        dto.setState(user.getState());
+        dto.setCountry(user.getCountry());
+        dto.setPincode(user.getPincode());
+        dto.setRoleName(user.getRole().getRoleName());
+
+        return new ApiResponse<>(true,"User Only Fetched Successfully",dto);
+    }
+
+    @Transactional
+    public ApiResponse<UserOnlyResponseDto> updateUserOnly(Long userId, UserOnlyResponseDto dto) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setEmail(dto.getEmail());
+        user.setMobileNumber(dto.getMobileNumber());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setAddress(dto.getAddress());
+        user.setCity(dto.getCity());
+        user.setState(dto.getState());
+        user.setCountry(dto.getCountry());
+        user.setPincode(dto.getPincode());
+        user.setUpdatedBy(1L);
+        user.setUpdatedDate(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        dto.setUserId(user.getUserId());
+        dto.setRoleName(user.getRole().getRoleName());
+
+        return new ApiResponse<>(true,"User Updated Successfully",dto);
+    }
 }
-
