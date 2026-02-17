@@ -4,6 +4,7 @@ import com.abcbankfinal.abcbankweb.dto.AccountResponseDto;
 import com.abcbankfinal.abcbankweb.model.Account;
 import com.abcbankfinal.abcbankweb.repository.AccountRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import com.abcbankfinal.abcbankweb.service.AccountFullDetailsProjection;
 import com.abcbankfinal.abcbankweb.service.AccountService;
 
 import lombok.RequiredArgsConstructor;
@@ -64,4 +65,11 @@ public class AccountServiceImpl implements AccountService {
                 response
         );
     }
+
+
+    @Override
+    public AccountFullDetailsProjection getAccountFullDetails(Long accountNumber) {
+        return accountRepository.findAccountFullDetails(accountNumber);
+    }
+
 }
