@@ -13,4 +13,6 @@ public interface UserAccountListProjection {
     Long getAccountNumber();
     String getAccountStatus();
     String getAccountType();
+
+    Long getRoleId();
 }

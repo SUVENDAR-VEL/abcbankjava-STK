@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
         return new ApiResponse<>(
                 true,
-                "User Saved Successfully",null
+                "User Saved Successfully", null
         );
     }
 
@@ -181,19 +181,36 @@ public class UserServiceImpl implements UserService {
     }
 
 
+//    @Override
+//    public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
+//
+//        Pageable pageable = PageRequest.of(
+//                request.getPage(),
+//                request.getSize(),
+//                Sort.by("u.user_id").descending()
+//        );
+//
+//        return accountRepository.searchUsers(
+//                request.getStatus(),
+//                pageable
+//        );
+//    }
+
+
     @Override
     public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
 
         Pageable pageable = PageRequest.of(
                 request.getPage(),
-                request.getSize(),
-                Sort.by("u.user_id").descending()
+                request.getSize()
         );
 
         return accountRepository.searchUsers(
                 request.getStatus(),
+                request.getRoleId(),
                 pageable
         );
     }
+
 }
 
