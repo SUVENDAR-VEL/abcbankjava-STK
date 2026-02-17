@@ -2,14 +2,16 @@ package com.abcbankfinal.abcbankweb.controller;
 
 
 
-import com.abcbankfinal.abcbankweb.dto.LoginRequestDTO;
-import com.abcbankfinal.abcbankweb.dto.LoginResponseDTO;
-import com.abcbankfinal.abcbankweb.dto.UserRequestDto;
-import com.abcbankfinal.abcbankweb.dto.UserResponseDto;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import com.abcbankfinal.abcbankweb.service.UserAccountListProjection;
 import com.abcbankfinal.abcbankweb.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +49,12 @@ public class UserController {
             @RequestBody LoginRequestDTO request) {
         return userService.login(request);
     }
+
+    @PostMapping("/search")
+    public Page<UserAccountListProjection> searchUsers(
+            @RequestBody UserSearchRequest request) {
+        return userService.searchUsers(request);
+    }
+
 }
 

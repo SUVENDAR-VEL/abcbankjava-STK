@@ -1,11 +1,10 @@
 package com.abcbankfinal.abcbankweb.service;
 
-import com.abcbankfinal.abcbankweb.dto.LoginRequestDTO;
-import com.abcbankfinal.abcbankweb.dto.LoginResponseDTO;
-import com.abcbankfinal.abcbankweb.dto.UserRequestDto;
-import com.abcbankfinal.abcbankweb.dto.UserResponseDto;
+import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
@@ -17,4 +16,6 @@ public interface UserService {
     ApiResponse<Void> updateUser(Long userId, UserRequestDto request);
 
     ApiResponse<LoginResponseDTO> login(LoginRequestDTO request);
+
+    Page<UserAccountListProjection> searchUsers(UserSearchRequest request);
 }
