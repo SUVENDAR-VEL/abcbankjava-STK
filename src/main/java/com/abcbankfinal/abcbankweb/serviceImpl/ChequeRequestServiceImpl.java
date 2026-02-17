@@ -61,9 +61,19 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
     public ApiResponse<List<ChequeRequestDto>>
     getByAccountNumber(Long accountNumber) {
 
+        // 🔽 FETCH LIST
+        List<ChequeRequest> requests =
+                chequeRepo.findByAccount_AccountNumberOrderByChequeRequestedDateDesc(accountNumber);
+
+        // 🔽 SORT BY requestedDate DESC
+        requests.sort(
+                (a, b) -> b.getRequestedDate()
+                        .compareTo(a.getRequestedDate())
+        );
+
+        // 🔽 MAP TO DTO
         List<ChequeRequestDto> list =
-                chequeRepo.findByAccount_AccountNumber(accountNumber)
-                        .stream()
+                requests.stream()
                         .map(req -> {
 
                             Integer approvedById = null;
@@ -142,7 +152,6 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
                 list
         );
     }
-
     // -------------------------------------------------------
     // ADMIN LIST (PAGINATION) — SAME AS LOST CARD
     // -------------------------------------------------------

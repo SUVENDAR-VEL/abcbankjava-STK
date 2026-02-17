@@ -60,18 +60,18 @@ public class QueriesResponseServiceImpl
 
         List<QueriesResponseDto> list =
                 queriesRepo
-                        .findByAccount_AccountNumber(accountNumber)
+                        .findByAccount_AccountNumberOrderByQueryRaisedDateDesc(
+                                accountNumber)
                         .stream()
                         .map(this::mapToDto)
                         .toList();
 
         return new ApiResponse<>(
                 true,
-                "Queries fetched successfully",
+                "Queries fetched successfully (Sorted by Request Date DESC)",
                 list
         );
     }
-
     // ================= GET ALL (PAGINATION) =================
 
     @Override

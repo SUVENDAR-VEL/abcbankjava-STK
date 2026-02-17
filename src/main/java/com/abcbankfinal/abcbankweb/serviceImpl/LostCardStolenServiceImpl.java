@@ -56,26 +56,51 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
 
     @Override
-    public ApiResponse<List<LostCardResponseDTO>> getLostCardsByAccountNumber(Long accountNumber) {
+    public ApiResponse<List<LostCardResponseDTO>>
+    getLostCardsByAccountNumber(
+            Long accountNumber) {
 
+        // 🔽 FETCH ENTITY LIST
+        List<LostCardStolen> lostCards =
+                lostCardRepo
+                        .findByAccount_AccountNumberOrderByLostCardRequestDateDesc(
+                                accountNumber);
+
+        // 🔽 SORT BY requestDate DESC (createdDate)
+        lostCards.sort(
+                (a, b) -> b.getCreatedDate()
+                        .compareTo(a.getCreatedDate())
+        );
+
+        // 🔽 MAP TO DTO
         List<LostCardResponseDTO> list =
-                lostCardRepo.findByAccount_AccountNumber(accountNumber)
-                        .stream()
+                lostCards.stream()
                         .map(lc -> {
 
                             Long approvedById = null;
                             String approvedByName = null;
 
                             if (lc.getApprovedBy() != null) {
-                                approvedById = lc.getApprovedBy().getUserId();
+                                approvedById =
+                                        lc.getApprovedBy()
+                                                .getUserId();
+
                                 approvedByName =
-                                        lc.getApprovedBy().getFirstName() + " " +
-                                                lc.getApprovedBy().getLastName();
+                                        lc.getApprovedBy()
+                                                .getFirstName()
+                                                + " " +
+                                                lc.getApprovedBy()
+                                                        .getLastName();
                             }
 
                             String fullName =
-                                    lc.getAccount().getCustomer().getFirstName() + " " +
-                                            lc.getAccount().getCustomer().getLastName();
+                                    lc.getAccount()
+                                            .getCustomer()
+                                            .getFirstName()
+                                            + " " +
+                                            lc.getAccount()
+                                                    .getCustomer()
+                                                    .getLastName();
 
                             return new LostCardResponseDTO(
                                     lc.getLostCardId(),
@@ -83,14 +108,21 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                                     lc.getLostCardStolenDate(),
                                     lc.getStatus(),
                                     lc.getRemarks(),
-                                    lc.getAccount().getAccountNumber(),
-                                    lc.getCreatedDate(),
+                                    lc.getAccount()
+                                            .getAccountNumber(),
+                                    lc.getCreatedDate(),   // requestDate
                                     approvedById,
                                     lc.getApprovedDate(),
                                     fullName,
-                                    lc.getAccount().getCustomer().getMobileNumber(),
-                                    lc.getAccount().getCustomer().getCity(),
-                                    lc.getAccount().getCustomer().getEmail(),
+                                    lc.getAccount()
+                                            .getCustomer()
+                                            .getMobileNumber(),
+                                    lc.getAccount()
+                                            .getCustomer()
+                                            .getCity(),
+                                    lc.getAccount()
+                                            .getCustomer()
+                                            .getEmail(),
                                     approvedByName
                             );
                         })
@@ -102,7 +134,6 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                 list
         );
     }
-
 
     @Override
     public ApiResponse<PageResponse<LostCardResponseDTO>> getAllLostCards(LostCardListRequestDTO request) {

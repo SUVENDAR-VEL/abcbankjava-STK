@@ -74,10 +74,20 @@ public class CreditCardLimitIncreaseServiceImpl
     public ApiResponse<List<CreditLimitIncreaseResponseDto>>
     getByAccountNumber(Long accountNumber) {
 
+        // 🔽 FETCH ENTITY LIST
+        List<CreditCardLimitIncrease> requests =
+                repository.findByAccount_AccountNumberOrderByCardLimitRequestDateDesc(
+                        accountNumber);
+
+        // 🔽 SORT BY requestDate DESC
+        requests.sort(
+                (a, b) -> b.getRequestDate()
+                        .compareTo(a.getRequestDate())
+        );
+
+        // 🔽 MAP TO DTO
         List<CreditLimitIncreaseResponseDto> list =
-                repository.findByAccount_AccountNumber(
-                                accountNumber)
-                        .stream()
+                requests.stream()
                         .map(req -> {
 
                             Integer approvedById = null;

@@ -13,7 +13,7 @@ public interface LostCardStolenRepository
         extends JpaRepository<LostCardStolen, Long> {
 
     List<LostCardStolen>
-    findByAccount_AccountNumber(
+    findByAccount_AccountNumberOrderByLostCardRequestDateDesc(
             Long accountNumber);
 
     Page<LostCardStolen>

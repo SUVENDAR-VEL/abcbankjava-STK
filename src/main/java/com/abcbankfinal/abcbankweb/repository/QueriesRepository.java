@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface QueriesRepository extends JpaRepository<Queries, Long> {
 
-    List<Queries> findByAccount_AccountNumber(Long accountNumber);
+    List<Queries>
+    findByAccount_AccountNumberOrderByQueryRaisedDateDesc(
+            Long accountNumber);
 
     Page<Queries> findByStatus(String status, Pageable pageable);
 

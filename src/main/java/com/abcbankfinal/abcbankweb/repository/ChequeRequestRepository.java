@@ -10,7 +10,8 @@ import java.util.List;
 public interface ChequeRequestRepository
         extends JpaRepository<ChequeRequest, Integer> {
 
-    List<ChequeRequest> findByAccount_AccountNumber(
+    List<ChequeRequest>
+    findByAccount_AccountNumberOrderByChequeRequestedDateDesc(
             Long accountNumber);
 
     Page<ChequeRequest> findByStatus(
