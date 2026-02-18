@@ -76,7 +76,7 @@ public class CreditCardLimitIncreaseServiceImpl
 
         // 🔽 FETCH ENTITY LIST
         List<CreditCardLimitIncrease> requests =
-                repository.findByAccount_AccountNumberOrderByCardLimitRequestDateDesc(
+                repository.findByAccount_AccountNumberOrderByRequestDateDesc(
                         accountNumber);
 
         // 🔽 SORT BY requestDate DESC

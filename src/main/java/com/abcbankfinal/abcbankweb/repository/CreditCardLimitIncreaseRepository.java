@@ -11,7 +11,7 @@ public interface CreditCardLimitIncreaseRepository
         extends JpaRepository<CreditCardLimitIncrease, Long> {
 
     List<CreditCardLimitIncrease>
-    findByAccount_AccountNumberOrderByCardLimitRequestDateDesc(
+    findByAccount_AccountNumberOrderByRequestDateDesc(
             Long accountNumber);
 
     Page<CreditCardLimitIncrease>

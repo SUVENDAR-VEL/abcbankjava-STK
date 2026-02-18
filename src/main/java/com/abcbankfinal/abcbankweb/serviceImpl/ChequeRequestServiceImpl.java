@@ -63,7 +63,7 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
 
         // 🔽 FETCH LIST
         List<ChequeRequest> requests =
-                chequeRepo.findByAccount_AccountNumberOrderByChequeRequestedDateDesc(accountNumber);
+                chequeRepo.findByAccount_AccountNumberOrderByRequestedDateDesc(accountNumber);
 
         // 🔽 SORT BY requestedDate DESC
         requests.sort(

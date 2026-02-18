@@ -63,7 +63,7 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         // 🔽 FETCH ENTITY LIST
         List<LostCardStolen> lostCards =
                 lostCardRepo
-                        .findByAccount_AccountNumberOrderByLostCardRequestDateDesc(
+                        .findByAccount_AccountNumberOrderByCreatedDateDesc(
                                 accountNumber);
 
         // 🔽 SORT BY requestDate DESC (createdDate)

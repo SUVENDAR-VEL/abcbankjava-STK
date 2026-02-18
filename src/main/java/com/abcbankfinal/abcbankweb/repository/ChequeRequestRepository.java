@@ -11,7 +11,7 @@ public interface ChequeRequestRepository
         extends JpaRepository<ChequeRequest, Integer> {
 
     List<ChequeRequest>
-    findByAccount_AccountNumberOrderByChequeRequestedDateDesc(
+    findByAccount_AccountNumberOrderByRequestedDateDesc(
             Long accountNumber);
 
     Page<ChequeRequest> findByStatus(
