@@ -32,23 +32,27 @@ public class TransactionServiceImpl implements TransactionService {
     public ApiResponse<List<TransactionResponseDto>>
     getTransactionsByAccountNumber(Long accountNumber) {
 
+        // ✅ DESC ORDER FETCH
         List<Transaction> transactions =
-                transactionRepository.findByAccountAccountNumberOrderByDateOfTransactionDesc(accountNumber);
+                transactionRepository
+                        .findByAccountAccountNumberOrderByDateOfTransactionDesc(
+                                accountNumber
+                        );
 
         if (transactions.isEmpty()) {
             throw new RuntimeException("No transactions found for this account");
         }
 
-        List<TransactionResponseDto> responseList = transactions.stream().map(tx -> {
-            TransactionResponseDto dto = new TransactionResponseDto();
-            dto.setTransactionId(tx.getTransactionId());
-            dto.setDateOfTransaction(tx.getDateOfTransaction());
-            dto.setTransactionType(tx.getTransactionType());
-            dto.setTransactionedAmount(tx.getTransactionedAmount());
-            dto.setClosingBalance(tx.getClosingBalance());
-            dto.setClosingBalance(tx.getClosingBalance());
-            return dto;
-        }).toList();
+        List<TransactionResponseDto> responseList =
+                transactions.stream().map(tx -> {
+                    TransactionResponseDto dto = new TransactionResponseDto();
+                    dto.setTransactionId(tx.getTransactionId());
+                    dto.setDateOfTransaction(tx.getDateOfTransaction());
+                    dto.setTransactionType(tx.getTransactionType());
+                    dto.setTransactionedAmount(tx.getTransactionedAmount());
+                    dto.setClosingBalance(tx.getClosingBalance());
+                    return dto;
+                }).toList();
 
         return new ApiResponse<>(
                 true,
@@ -56,7 +60,6 @@ public class TransactionServiceImpl implements TransactionService {
                 responseList
         );
     }
-
 
     @Override
     public ApiResponse<List<CardDto>> getCardsByAccountNumber(Long accountNumber) {
