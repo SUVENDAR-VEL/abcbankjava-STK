@@ -36,6 +36,14 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserOnlyById(userId));
     }
 
+    @PutMapping("/updateContact/{userId}")
+    public ApiResponse<Void> updateUserContactByUserId(
+            @PathVariable Long userId,
+            @RequestBody UserContactUpdateDto request) {
+
+        return userService.updateUserContactByUserId(userId, request);
+    }
+
     @PutMapping("/update/{userId}")
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @PathVariable Long userId,

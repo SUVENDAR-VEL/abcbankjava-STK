@@ -18,4 +18,9 @@ public interface UserService {
     Page<UserAccountListProjection> searchUsers(UserSearchRequest request);
 
     ApiResponse<UserOnlyResponseDto> getUserOnlyById(Long userId);
+
+    ApiResponse<Void> updateUserContactByUserId(
+            Long userId,
+            UserContactUpdateDto request
+    );
 }

@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final AccountTypeRepository accountTypeRepository;
 
+    // ================= CREATE USER =================
     @Transactional
     public ApiResponse<User> createUserWithAccount(UserRequestDto request) {
 
@@ -76,13 +77,14 @@ public class UserServiceImpl implements UserService {
 
         accountRepository.save(account);
 
-        return new ApiResponse<>(true,"User Saved Successfully",null);
+        return new ApiResponse<>(true, "User Saved Successfully", null);
     }
 
     private Long generateAccountNumber() {
         return 1000000000L + new Random().nextInt(900000000);
     }
 
+    // ================= GET USER WITH ACCOUNTS =================
     public ApiResponse<UserResponseDto> getUserById(Long userId) {
 
         User user = userRepository.findById(userId)
@@ -112,19 +114,17 @@ public class UserServiceImpl implements UserService {
             dto.setOpenedDate(acc.getOpenedDate());
 
             if (acc.getAccountType() != null) {
-                dto.setAccountTypeName(
-                        acc.getAccountType().getAccountTypeName()
-                );
+                dto.setAccountTypeName(acc.getAccountType().getAccountTypeName());
             }
-
             return dto;
         }).toList();
 
         response.setAccounts(accountDtos);
 
-        return new ApiResponse<>(true,"User Fetched Successfully",response);
+        return new ApiResponse<>(true, "User Fetched Successfully", response);
     }
 
+    // ================= UPDATE USER =================
     @Transactional
     public ApiResponse<Void> updateUser(Long userId, UserRequestDto request) {
 
@@ -148,9 +148,10 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        return new ApiResponse<>(true,"User Updated Successfully",null);
+        return new ApiResponse<>(true, "User Updated Successfully", null);
     }
 
+    // ================= LOGIN =================
     public ApiResponse<LoginResponseDTO> login(LoginRequestDTO request) {
 
         User user = userRepository.findByEmailAndPassword(
@@ -159,7 +160,7 @@ public class UserServiceImpl implements UserService {
         );
 
         if (user == null) {
-            return new ApiResponse<>(false,"Invalid email or password",null);
+            return new ApiResponse<>(false, "Invalid email or password", null);
         }
 
         LoginResponseDTO response = new LoginResponseDTO(
@@ -169,21 +170,18 @@ public class UserServiceImpl implements UserService {
                 user.getRole().getRoleId()
         );
 
-        return new ApiResponse<>(true,"Login successful",response);
+        return new ApiResponse<>(true, "Login successful", response);
     }
 
+    // ================= SEARCH USERS =================
     public Page<UserAccountListProjection> searchUsers(UserSearchRequest request) {
 
         String status = request.getStatus();
-
         if (status != null && status.trim().isEmpty()) {
             status = null;
         }
 
-        Pageable pageable = PageRequest.of(
-                request.getPage(),
-                request.getSize()
-        );
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
 
         return accountRepository.searchUsers(
                 status,
@@ -192,6 +190,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    // ================= GET USER ONLY =================
     public ApiResponse<UserOnlyResponseDto> getUserOnlyById(Long userId) {
 
         User user = userRepository.findById(userId)
@@ -204,10 +203,52 @@ public class UserServiceImpl implements UserService {
         dto.setEmail(user.getEmail());
         dto.setMobileNumber(user.getMobileNumber());
         dto.setDateOfBirth(user.getDateOfBirth());
+        dto.setAddress(user.getAddress());
         dto.setCity(user.getCity());
         dto.setState(user.getState());
+        dto.setCountry(user.getCountry());
+        dto.setPincode(user.getPincode());
         dto.setRoleName(user.getRole().getRoleName());
 
-        return new ApiResponse<>(true,"User Only Fetched Successfully",dto);
+        return new ApiResponse<>(true, "User Only Fetched Successfully", dto);
     }
+
+    // ================= UPDATE CONTACT DETAILS BY USER ID =================
+    @Transactional
+    public ApiResponse<Void> updateUserContactByUserId(
+            Long userId,
+            UserContactUpdateDto request) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getMobileNumber() != null) {
+            user.setMobileNumber(request.getMobileNumber());
+        }
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
+        }
+        if (request.getCity() != null) {
+            user.setCity(request.getCity());
+        }
+        if (request.getState() != null) {
+            user.setState(request.getState());
+        }
+        if (request.getCountry() != null) {
+            user.setCountry(request.getCountry());
+        }
+        if (request.getPincode() != null) {
+            user.setPincode(request.getPincode());
+        }
+
+        user.setUpdatedBy(1L);
+        user.setUpdatedDate(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        return new ApiResponse<>(true,
+                "User Contact Details Updated Successfully",
+                null);
+    }
+
 }
