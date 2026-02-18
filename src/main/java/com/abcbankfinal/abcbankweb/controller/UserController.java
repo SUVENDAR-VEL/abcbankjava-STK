@@ -1,7 +1,5 @@
 package com.abcbankfinal.abcbankweb.controller;
 
-
-
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
@@ -9,9 +7,6 @@ import com.abcbankfinal.abcbankweb.service.UserAccountListProjection;
 import com.abcbankfinal.abcbankweb.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,12 +24,16 @@ public class UserController {
         return ResponseEntity.ok(userService.createUserWithAccount(request));
     }
 
-
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(
             @PathVariable Long userId) {
-
         return ResponseEntity.ok(userService.getUserById(userId));
+    }
+
+    @GetMapping("/details/{userId}")
+    public ResponseEntity<ApiResponse<UserOnlyResponseDto>> getUserOnlyById(
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserOnlyById(userId));
     }
 
     @PutMapping("/update/{userId}")
@@ -56,4 +55,3 @@ public class UserController {
         return userService.searchUsers(request);
     }
 }
-
