@@ -2,11 +2,10 @@ package com.abcbankfinal.abcbankweb.serviceImpl;
 
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
+import com.abcbankfinal.abcbankweb.model.Card;
 import com.abcbankfinal.abcbankweb.model.LostCardStolen;
 import com.abcbankfinal.abcbankweb.model.User;
-import com.abcbankfinal.abcbankweb.repository.AccountRepository;
-import com.abcbankfinal.abcbankweb.repository.LostCardStolenRepository;
-import com.abcbankfinal.abcbankweb.repository.UserRepository;
+import com.abcbankfinal.abcbankweb.repository.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
 import jakarta.transaction.Transactional;
@@ -27,7 +26,7 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
     private final LostCardStolenRepository lostCardRepo;
     private final AccountRepository accountRepo;
-
+    private final CardRepository cardRepository;
 
     private final UserRepository userRepository;
 
@@ -60,19 +59,16 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
     getLostCardsByAccountNumber(
             Long accountNumber) {
 
-        // 🔽 FETCH ENTITY LIST
         List<LostCardStolen> lostCards =
                 lostCardRepo
                         .findByAccount_AccountNumberOrderByCreatedDateDesc(
                                 accountNumber);
 
-        // 🔽 SORT BY requestDate DESC (createdDate)
         lostCards.sort(
                 (a, b) -> b.getCreatedDate()
                         .compareTo(a.getCreatedDate())
         );
 
-        // 🔽 MAP TO DTO
         List<LostCardResponseDTO> list =
                 lostCards.stream()
                         .map(lc -> {
@@ -174,13 +170,13 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                             lc.getRemarks(),
                             lc.getAccount().getAccountNumber(),
                             lc.getCreatedDate(),
-                            approvedById,              // ✅ ID only
+                            approvedById,
                             lc.getApprovedDate(),
                             fullName,
                             lc.getAccount().getCustomer().getMobileNumber(),
                             lc.getAccount().getCustomer().getCity(),
                             lc.getAccount().getCustomer().getEmail(),
-                            approvedByName            // ✅ Name
+                            approvedByName
                     );
                 })
                 .toList();
@@ -256,37 +252,63 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
             Long id,
             LostCardUpdateRequestDTO request) {
 
-        // 1️⃣ Fetch Lost Card
         LostCardStolen lostCard = lostCardRepo.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Lost Card not found with ID: " + id)
+                        new RuntimeException(
+                                "Lost Card not found with ID: " + id)
                 );
 
-        // 2️⃣ Fetch Approved User using approvedById
-        User user = userRepository.findById(request.getApprovedById())
+        User user = userRepository.findById(
+                        request.getApprovedById())
                 .orElseThrow(() ->
-                        new RuntimeException("User not found with ID: " + request.getApprovedById())
+                        new RuntimeException(
+                                "User not found with ID: "
+                                        + request.getApprovedById())
                 );
 
-        // 3️⃣ Set Approved Details
         lostCard.setApprovedBy(user);
         lostCard.setApprovedDate(LocalDate.now());
 
-        // 4️⃣ Update Status
-        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
+        if ("APPROVE".equalsIgnoreCase(
+                request.getAction())) {
 
             lostCard.setStatus("Approved");
             lostCard.setRemarks(null);
 
-        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
+            Long accountNumber =
+                    lostCard.getAccount()
+                            .getAccountNumber();
 
-            lostCard.setStatus("Rejected");
-            lostCard.setRemarks(request.getRemarks());
+            List<Card> cards =
+                    cardRepository
+                            .findByAccountAccountNumber(
+                                    accountNumber);
 
-        } else {
-            throw new RuntimeException("Invalid action. Use APPROVE or REJECT");
+            if (cards.isEmpty()) {
+                throw new RuntimeException(
+                        "No card found for this account");
+            }
+
+            for (Card card : cards) {
+                card.setStatus("Blocked");
+            }
+
+            cardRepository.saveAll(cards);
         }
 
+        else if ("REJECT".equalsIgnoreCase(
+                request.getAction())) {
+
+            lostCard.setStatus("Rejected");
+            lostCard.setRemarks(
+                    request.getRemarks());
+
+        }
+
+        else {
+            throw new RuntimeException(
+                    "Invalid action. Use APPROVE or REJECT");
+        }
 
         lostCardRepo.save(lostCard);
 
@@ -326,4 +348,3 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
         );
     }
 }
-

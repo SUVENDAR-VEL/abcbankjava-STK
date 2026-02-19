@@ -2,6 +2,7 @@ package com.abcbankfinal.abcbankweb.serviceImpl;
 
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.model.Account;
+import com.abcbankfinal.abcbankweb.model.Card;
 import com.abcbankfinal.abcbankweb.model.CreditCardLimitIncrease;
 import com.abcbankfinal.abcbankweb.model.User;
 import com.abcbankfinal.abcbankweb.repository.AccountRepository;
@@ -74,18 +75,15 @@ public class CreditCardLimitIncreaseServiceImpl
     public ApiResponse<List<CreditLimitIncreaseResponseDto>>
     getByAccountNumber(Long accountNumber) {
 
-        // 🔽 FETCH ENTITY LIST
         List<CreditCardLimitIncrease> requests =
                 repository.findByAccount_AccountNumberOrderByRequestDateDesc(
                         accountNumber);
 
-        // 🔽 SORT BY requestDate DESC
         requests.sort(
                 (a, b) -> b.getRequestDate()
                         .compareTo(a.getRequestDate())
         );
 
-        // 🔽 MAP TO DTO
         List<CreditLimitIncreaseResponseDto> list =
                 requests.stream()
                         .map(req -> {
@@ -375,13 +373,38 @@ public class CreditCardLimitIncreaseServiceImpl
                 Math.toIntExact(user.getUserId()));
         entity.setApprovedDate(LocalDate.now());
 
+
         if ("APPROVE".equalsIgnoreCase(
                 request.getAction())) {
 
             entity.setStatus("Approved");
             entity.setRemarks(null);
 
-        } else if ("REJECT".equalsIgnoreCase(
+            Long accountNumber =
+                    entity.getAccount()
+                            .getAccountNumber();
+
+            List<Card> cards =
+                    cardRepository
+                            .findByAccountAccountNumber(
+                                    accountNumber);
+
+            for (Card card : cards) {
+
+                if (card.getCardType()
+                        .getCardTypeName()
+                        .equalsIgnoreCase("CREDIT")) {
+
+                    card.setCurrentLimit(
+                            entity.getRequestedLimit());
+
+                    cardRepository.save(card);
+                }
+            }
+
+        }
+
+        else if ("REJECT".equalsIgnoreCase(
                 request.getAction())) {
 
             entity.setStatus("Rejected");
