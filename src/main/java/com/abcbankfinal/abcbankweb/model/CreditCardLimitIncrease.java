@@ -2,7 +2,6 @@ package com.abcbankfinal.abcbankweb.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Data
@@ -30,13 +29,13 @@ public class CreditCardLimitIncrease {
     @Column(name = "approved_date")
     private LocalDate approvedDate;
 
-    @Column(name = "status", length = 10)
+    @Column(name = "status", length = 15)
     private String status;
 
     @Column(name = "remarks", length = 225)
     private String remarks;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_number", nullable = false)
-    private Account account;
+    @JoinColumn(name = "card_id", nullable = false)
+    private Card card;
 }
