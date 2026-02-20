@@ -1,7 +1,6 @@
 package com.abcbankfinal.abcbankweb.dto;
 
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Data
@@ -9,6 +8,7 @@ public class CreditLimitIncreaseResponseDto {
 
     private Long increaseCreditLimitId;
     private Double requestedLimit;
+    private Double currentLimitAtRequest;
     private LocalDate requestDate;
 
     private Integer approvedBy;

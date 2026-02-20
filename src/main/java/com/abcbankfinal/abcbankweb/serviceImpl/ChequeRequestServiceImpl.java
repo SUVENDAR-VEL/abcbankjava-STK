@@ -61,90 +61,42 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
     public ApiResponse<List<ChequeRequestDto>>
     getByAccountNumber(Long accountNumber) {
 
-        // 🔽 FETCH LIST
-        List<ChequeRequest> requests =
-                chequeRepo.findByAccount_AccountNumberOrderByRequestedDateDesc(accountNumber);
+        List<Object[]> results =
+                chequeRepo.findChequeRequestOptimized(accountNumber);
 
-        // 🔽 SORT BY requestedDate DESC
-        requests.sort(
-                (a, b) -> b.getRequestedDate()
-                        .compareTo(a.getRequestedDate())
-        );
+        List<ChequeRequestDto> list = results.stream()
+                .map(obj -> {
 
-        // 🔽 MAP TO DTO
-        List<ChequeRequestDto> list =
-                requests.stream()
-                        .map(req -> {
+                    ChequeRequestDto dto = new ChequeRequestDto();
 
-                            Integer approvedById = null;
-                            String approvedByName = null;
+                    dto.setChequeRequestId((Integer) obj[0]);
+                    dto.setNoOfLeaves((Integer) obj[1]);
+                    dto.setRequestedDate((LocalDate) obj[2]);
+                    dto.setApprovedBy((Integer) obj[3]);
+                    dto.setApprovedDate((LocalDate) obj[4]);
+                    dto.setStatus((String) obj[5]);
+                    dto.setRemarks((String) obj[6]);
+                    dto.setAccountNumber((Long) obj[7]);
 
-                            if (req.getApprovedBy() != null) {
+                    String firstName = (String) obj[8];
+                    String lastName = (String) obj[9];
+                    dto.setFullName(firstName + " " + lastName);
 
-                                approvedById =
-                                        req.getApprovedBy();
+                    dto.setMobileNumber((String) obj[10]);
+                    dto.setCity((String) obj[11]);
+                    dto.setEmail((String) obj[12]);
 
-                                User user =
-                                        userRepository.findById(
-                                                        Long.valueOf(
-                                                                approvedById))
-                                                .orElse(null);
+                    String adminFirstName = (String) obj[13];
+                    String adminLastName = (String) obj[14];
 
-                                if (user != null) {
-                                    approvedByName =
-                                            user.getFirstName()
-                                                    + " " +
-                                                    user.getLastName();
-                                }
-                            }
+                    if (adminFirstName != null) {
+                        dto.setApprovedByName(
+                                adminFirstName + " " + adminLastName);
+                    }
 
-                            String fullName =
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getFirstName()
-                                            + " " +
-                                            req.getAccount()
-                                                    .getCustomer()
-                                                    .getLastName();
-
-                            ChequeRequestDto dto =
-                                    new ChequeRequestDto();
-
-                            dto.setChequeRequestId(
-                                    req.getChequeRequestId());
-                            dto.setNoOfLeaves(
-                                    req.getNoOfLeaves());
-                            dto.setRequestedDate(
-                                    req.getRequestedDate());
-                            dto.setApprovedBy(
-                                    req.getApprovedBy());
-                            dto.setApprovedDate(
-                                    req.getApprovedDate());
-                            dto.setStatus(req.getStatus());
-                            dto.setRemarks(req.getRemarks());
-                            dto.setAccountNumber(
-                                    req.getAccount()
-                                            .getAccountNumber());
-
-                            dto.setFullName(fullName);
-                            dto.setMobileNumber(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getMobileNumber());
-                            dto.setCity(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getCity());
-                            dto.setEmail(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getEmail());
-                            dto.setApprovedByName(
-                                    approvedByName);
-
-                            return dto;
-                        })
-                        .toList();
+                    return dto;
+                })
+                .toList();
 
         return new ApiResponse<>(
                 true,
@@ -152,6 +104,7 @@ public class ChequeRequestServiceImpl implements ChequeRequestService {
                 list
         );
     }
+
     // -------------------------------------------------------
     // ADMIN LIST (PAGINATION) — SAME AS LOST CARD
     // -------------------------------------------------------

@@ -8,31 +8,24 @@ import com.abcbankfinal.abcbankweb.repository.CardRepository;
 import com.abcbankfinal.abcbankweb.repository.TransactionRepository;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.TransactionService;
-import com.abcbankfinal.abcbankweb.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-
-    @Autowired
-    private TransactionRepository transactionRepository;
-
-    @Autowired
-    private CardRepository cardRepository;
+    private final TransactionRepository transactionRepository;
+    private final CardRepository cardRepository;
 
     @Override
     public ApiResponse<List<TransactionResponseDto>>
     getTransactionsByAccountNumber(Long accountNumber) {
 
-        // ✅ DESC ORDER FETCH
         List<Transaction> transactions =
                 transactionRepository
                         .findByAccountAccountNumberOrderByDateOfTransactionDesc(
@@ -40,7 +33,11 @@ public class TransactionServiceImpl implements TransactionService {
                         );
 
         if (transactions.isEmpty()) {
-            throw new RuntimeException("No transactions found for this account");
+            return new ApiResponse<>(
+                    false,
+                    "No transactions found for this account",
+                    null
+            );
         }
 
         List<TransactionResponseDto> responseList =
@@ -52,7 +49,7 @@ public class TransactionServiceImpl implements TransactionService {
                     dto.setTransactionedAmount(tx.getTransactionedAmount());
                     dto.setClosingBalance(tx.getClosingBalance());
                     return dto;
-                }).toList();
+                }).collect(Collectors.toList());
 
         return new ApiResponse<>(
                 true,
@@ -63,36 +60,46 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public ApiResponse<List<CardDto>> getCardsByAccountNumber(Long accountNumber) {
-        List<Card> cards = cardRepository.findByAccountAccountNumber(accountNumber);
-        if (cards == null || cards.isEmpty()) {
+
+        // ✅ UPDATED → Fetch only ACTIVE cards
+        List<Card> cards =
+                cardRepository
+                        .findByAccountAccountNumberAndStatusIgnoreCase(
+                                accountNumber,
+                                "ACTIVE"
+                        );
+
+        if (cards.isEmpty()) {
             return new ApiResponse<>(
                     false,
-                    "No cards found for this account",
+                    "No ACTIVE cards found for this account",
                     null
             );
         }
 
-        List<CardDto> response = cards.stream().map(card -> {
-            CardDto dto = new CardDto();
-            dto.setCardId(card.getCardId());
-            dto.setCardNumber(card.getCardNumber());
-            dto.setCurrentLimit(card.getCurrentLimit());
-            dto.setIssuedDate(card.getIssuedDate());
-            dto.setExpiryDate(card.getExpiryDate());
-            dto.setStatus(card.getStatus());
-            dto.setMaxLimit(card.getMaxLimit());
-            dto.setCardTypeName(card.getCardType().getCardTypeName());
-            dto.setAccountNumber(card.getAccount().getAccountNumber());
-
-            return dto;
-        }).collect(Collectors.toList());
+        List<CardDto> response =
+                cards.stream().map(card -> {
+                    CardDto dto = new CardDto();
+                    dto.setCardId(card.getCardId());
+                    dto.setCardNumber(card.getCardNumber());
+                    dto.setCurrentLimit(card.getCurrentLimit());
+                    dto.setIssuedDate(card.getIssuedDate());
+                    dto.setExpiryDate(card.getExpiryDate());
+                    dto.setStatus(card.getStatus());
+                    dto.setMaxLimit(card.getMaxLimit());
+                    dto.setCardTypeName(
+                            card.getCardType().getCardTypeName()
+                    );
+                    dto.setAccountNumber(
+                            card.getAccount().getAccountNumber()
+                    );
+                    return dto;
+                }).collect(Collectors.toList());
 
         return new ApiResponse<>(
                 true,
-                "Cards fetched successfully",
+                "Active Cards Fetched Successfully",
                 response
         );
     }
-
-
 }

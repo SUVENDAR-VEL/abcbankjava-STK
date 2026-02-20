@@ -58,20 +58,52 @@ public class QueriesResponseServiceImpl
     public ApiResponse<List<QueriesResponseDto>>
     getByAccountNumber(Long accountNumber) {
 
+        List<Object[]> results =
+                queriesRepo.findQueriesOptimized(accountNumber);
+
         List<QueriesResponseDto> list =
-                queriesRepo
-                        .findByAccount_AccountNumberOrderByQueryRaisedDateDesc(
-                                accountNumber)
-                        .stream()
-                        .map(this::mapToDto)
+                results.stream()
+                        .map(obj -> {
+
+                            QueriesResponseDto dto =
+                                    new QueriesResponseDto();
+
+                            dto.setQueriesId((Long) obj[0]);
+                            dto.setCustomerQuery((String) obj[1]);
+                            dto.setQueryRaisedDate((LocalDate) obj[2]);
+                            dto.setQueryResponse((String) obj[3]);
+                            dto.setQueryApprovedBy((Integer) obj[4]);
+                            dto.setQueryApprovedDate((LocalDate) obj[5]);
+                            dto.setStatus((String) obj[6]);
+                            dto.setAccountNumber((Long) obj[7]);
+
+                            String firstName = (String) obj[8];
+                            String lastName = (String) obj[9];
+                            dto.setFullName(firstName + " " + lastName);
+
+                            dto.setMobileNumber((String) obj[10]);
+                            dto.setCity((String) obj[11]);
+                            dto.setEmail((String) obj[12]);
+
+                            String adminFirst = (String) obj[13];
+                            String adminLast = (String) obj[14];
+
+                            if (adminFirst != null) {
+                                dto.setApprovedByName(
+                                        adminFirst + " " + adminLast);
+                            }
+
+                            return dto;
+                        })
                         .toList();
 
         return new ApiResponse<>(
                 true,
-                "Queries fetched successfully (Sorted by Request Date DESC)",
+                "Queries fetched successfully",
                 list
         );
     }
+
     // ================= GET ALL (PAGINATION) =================
 
     @Override

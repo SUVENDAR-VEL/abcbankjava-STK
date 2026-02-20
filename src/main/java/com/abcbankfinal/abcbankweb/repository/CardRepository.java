@@ -9,7 +9,10 @@ import java.util.List;
 @Repository
 public interface CardRepository extends JpaRepository<Card, Long> {
 
-    List<Card> findByAccountAccountNumber(Long accountNumber);
+    List<Card> findByAccountAccountNumberAndStatusIgnoreCase(
+            Long accountNumber,
+            String status
+    );
 
     boolean existsByAccountAccountNumber(Long accountNumber);
 }

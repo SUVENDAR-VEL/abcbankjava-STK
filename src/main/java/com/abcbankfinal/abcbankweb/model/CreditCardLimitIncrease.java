@@ -21,6 +21,9 @@ public class CreditCardLimitIncrease {
     @Column(name = "requested_limit", nullable = false)
     private Double requestedLimit;
 
+    @Column(name = "current_limit_at_request", nullable = false)
+    private Double currentLimitAtRequest;
+
     @Column(name = "approved_by")
     private Integer approvedBy;
 

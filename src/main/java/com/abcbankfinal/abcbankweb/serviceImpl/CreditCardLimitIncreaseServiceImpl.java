@@ -29,37 +29,58 @@ public class CreditCardLimitIncreaseServiceImpl
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
 
+    // ============================================================
+    // SAVE REQUEST
+    // ============================================================
+
     @Override
     public ApiResponse<CreditLimitIncreaseResponseDto>
-    saveCreditLimitIncrease(
-            CreditLimitIncreaseSaveDto dto) {
+    saveCreditLimitIncrease(CreditLimitIncreaseSaveDto dto) {
 
-        Account account =
-                accountRepository.findById(
-                                dto.getAccountNumber())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Account not found"));
+        Account account = accountRepository.findById(
+                        dto.getAccountNumber())
+                .orElseThrow(() ->
+                        new RuntimeException("Account not found"));
 
-        boolean hasCard =
-                cardRepository.existsByAccountAccountNumber(
-                        dto.getAccountNumber());
+        List<Card> cards =
+                cardRepository.findByAccountAccountNumberAndStatusIgnoreCase(
+                        dto.getAccountNumber(),
+                        "ACTIVE");
 
-        if (!hasCard) {
+        if (cards.isEmpty()) {
             return new ApiResponse<>(
                     false,
-                    "This account does not have any credit card",
-                    null
-            );
+                    "This account does not have any active card",
+                    null);
+        }
+
+        // ✅ Get current credit card limit (SNAPSHOT)
+        Double currentLimit = null;
+
+        for (Card card : cards) {
+            if (card.getCardType()
+                    .getCardTypeName()
+                    .equalsIgnoreCase("CREDIT")) {
+
+                currentLimit = card.getCurrentLimit();
+                break;
+            }
+        }
+
+        if (currentLimit == null) {
+            return new ApiResponse<>(
+                    false,
+                    "No active credit card found",
+                    null);
         }
 
         CreditCardLimitIncrease entity =
                 new CreditCardLimitIncrease();
 
-        entity.setRequestedLimit(
-                dto.getRequestedLimit());
+        entity.setRequestedLimit(dto.getRequestedLimit());
+        entity.setCurrentLimitAtRequest(currentLimit); // ✅ SNAPSHOT STORED
         entity.setRequestDate(LocalDate.now());
-        entity.setStatus("Pending");
+        entity.setStatus("PENDING");
         entity.setAccount(account);
 
         repository.save(entity);
@@ -67,103 +88,64 @@ public class CreditCardLimitIncreaseServiceImpl
         return new ApiResponse<>(
                 true,
                 "Credit limit increase request submitted successfully",
-                null
-        );
+                null);
     }
+
+    // ============================================================
+    // GET BY ACCOUNT
+    // ============================================================
 
     @Override
     public ApiResponse<List<CreditLimitIncreaseResponseDto>>
     getByAccountNumber(Long accountNumber) {
 
-        List<CreditCardLimitIncrease> requests =
-                repository.findByAccount_AccountNumberOrderByRequestDateDesc(
-                        accountNumber);
-
-        requests.sort(
-                (a, b) -> b.getRequestDate()
-                        .compareTo(a.getRequestDate())
-        );
+        List<Object[]> results =
+                repository.findCreditLimitIncreaseOptimized(accountNumber);
 
         List<CreditLimitIncreaseResponseDto> list =
-                requests.stream()
-                        .map(req -> {
+                results.stream().map(obj -> {
 
-                            Integer approvedById = null;
-                            String approvedByName = null;
+                    CreditLimitIncreaseResponseDto dto =
+                            new CreditLimitIncreaseResponseDto();
 
-                            if (req.getApprovedBy() != null) {
+                    dto.setIncreaseCreditLimitId((Long) obj[0]);
+                    dto.setRequestedLimit((Double) obj[1]);
+                    dto.setCurrentLimitAtRequest((Double) obj[2]);
+                    dto.setRequestDate((LocalDate) obj[3]);
+                    dto.setApprovedBy((Integer) obj[4]);
+                    dto.setApprovedDate((LocalDate) obj[5]);
+                    dto.setRemarks((String) obj[6]);
+                    dto.setStatus((String) obj[7]);
+                    dto.setAccountNumber((Long) obj[8]);
 
-                                approvedById =
-                                        req.getApprovedBy();
+                    String firstName = (String) obj[9];
+                    String lastName = (String) obj[10];
+                    dto.setFullName(firstName + " " + lastName);
 
-                                User user =
-                                        userRepository.findById(
-                                                        Long.valueOf(
-                                                                approvedById))
-                                                .orElse(null);
+                    dto.setMobileNumber((String) obj[11]);
+                    dto.setCity((String) obj[12]);
+                    dto.setEmail((String) obj[13]);
 
-                                if (user != null) {
-                                    approvedByName =
-                                            user.getFirstName()
-                                                    + " " +
-                                                    user.getLastName();
-                                }
-                            }
+                    String adminFirst = (String) obj[14];
+                    String adminLast = (String) obj[15];
 
-                            String fullName =
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getFirstName()
-                                            + " " +
-                                            req.getAccount()
-                                                    .getCustomer()
-                                                    .getLastName();
+                    if (adminFirst != null) {
+                        dto.setApprovedByName(
+                                adminFirst + " " + adminLast);
+                    }
 
-                            CreditLimitIncreaseResponseDto dto =
-                                    new CreditLimitIncreaseResponseDto();
-
-                            dto.setIncreaseCreditLimitId(
-                                    req.getIncreaseCreditLimitId());
-                            dto.setRequestedLimit(
-                                    req.getRequestedLimit());
-                            dto.setRequestDate(
-                                    req.getRequestDate());
-                            dto.setApprovedBy(
-                                    req.getApprovedBy());
-                            dto.setApprovedDate(
-                                    req.getApprovedDate());
-                            dto.setStatus(req.getStatus());
-                            dto.setRemarks(req.getRemarks());
-                            dto.setAccountNumber(
-                                    req.getAccount()
-                                            .getAccountNumber());
-
-                            dto.setFullName(fullName);
-                            dto.setMobileNumber(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getMobileNumber());
-                            dto.setCity(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getCity());
-                            dto.setEmail(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getEmail());
-                            dto.setApprovedByName(
-                                    approvedByName);
-
-                            return dto;
-                        })
-                        .toList();
+                    return dto;
+                }).toList();
 
         return new ApiResponse<>(
                 true,
                 "Credit limit increase requests fetched successfully",
-                list
-        );
+                list);
     }
+
+    // ============================================================
+    // ADMIN LIST
+    // ============================================================
 
     @Override
     public ApiResponse<PageResponse<CreditLimitIncreaseResponseDto>>
@@ -173,8 +155,7 @@ public class CreditCardLimitIncreaseServiceImpl
         Pageable pageable = PageRequest.of(
                 request.getPage(),
                 request.getSize(),
-                Sort.by("requestDate").descending()
-        );
+                Sort.by("requestDate").descending());
 
         Page<CreditCardLimitIncrease> resultPage =
                 (request.getStatus() == null ||
@@ -185,78 +166,54 @@ public class CreditCardLimitIncreaseServiceImpl
                         pageable);
 
         List<CreditLimitIncreaseResponseDto> content =
-                resultPage.stream()
-                        .map(req -> {
+                resultPage.stream().map(req -> {
 
-                            String fullName =
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getFirstName()
-                                            + " " +
-                                            req.getAccount()
-                                                    .getCustomer()
-                                                    .getLastName();
+                    CreditLimitIncreaseResponseDto dto =
+                            new CreditLimitIncreaseResponseDto();
 
-                            Integer approvedById = null;
-                            String approvedByName = null;
+                    dto.setIncreaseCreditLimitId(
+                            req.getIncreaseCreditLimitId());
+                    dto.setRequestedLimit(
+                            req.getRequestedLimit());
+                    dto.setCurrentLimitAtRequest(
+                            req.getCurrentLimitAtRequest());
+                    dto.setRequestDate(req.getRequestDate());
+                    dto.setApprovedBy(req.getApprovedBy());
+                    dto.setApprovedDate(req.getApprovedDate());
+                    dto.setStatus(req.getStatus());
+                    dto.setRemarks(req.getRemarks());
+                    dto.setAccountNumber(
+                            req.getAccount().getAccountNumber());
 
-                            if (req.getApprovedBy() != null) {
+                    String fullName =
+                            req.getAccount().getCustomer().getFirstName()
+                                    + " " +
+                                    req.getAccount().getCustomer().getLastName();
 
-                                approvedById =
-                                        req.getApprovedBy();
+                    dto.setFullName(fullName);
+                    dto.setMobileNumber(
+                            req.getAccount().getCustomer().getMobileNumber());
+                    dto.setCity(
+                            req.getAccount().getCustomer().getCity());
+                    dto.setEmail(
+                            req.getAccount().getCustomer().getEmail());
 
-                                User user =
-                                        userRepository.findById(
-                                                        Long.valueOf(
-                                                                approvedById))
-                                                .orElse(null);
+                    if (req.getApprovedBy() != null) {
+                        User user =
+                                userRepository.findById(
+                                                Long.valueOf(req.getApprovedBy()))
+                                        .orElse(null);
 
-                                if (user != null) {
-                                    approvedByName =
-                                            user.getFirstName()
-                                                    + " " +
-                                                    user.getLastName();
-                                }
-                            }
-
-                            CreditLimitIncreaseResponseDto dto =
-                                    new CreditLimitIncreaseResponseDto();
-
-                            dto.setIncreaseCreditLimitId(
-                                    req.getIncreaseCreditLimitId());
-                            dto.setRequestedLimit(
-                                    req.getRequestedLimit());
-                            dto.setRequestDate(
-                                    req.getRequestDate());
-                            dto.setApprovedBy(
-                                    req.getApprovedBy());
-                            dto.setApprovedDate(
-                                    req.getApprovedDate());
-                            dto.setStatus(req.getStatus());
-                            dto.setRemarks(req.getRemarks());
-                            dto.setAccountNumber(
-                                    req.getAccount()
-                                            .getAccountNumber());
-
-                            dto.setFullName(fullName);
-                            dto.setMobileNumber(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getMobileNumber());
-                            dto.setCity(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getCity());
-                            dto.setEmail(
-                                    req.getAccount()
-                                            .getCustomer()
-                                            .getEmail());
+                        if (user != null) {
                             dto.setApprovedByName(
-                                    approvedByName);
+                                    user.getFirstName()
+                                            + " " +
+                                            user.getLastName());
+                        }
+                    }
 
-                            return dto;
-                        })
-                        .toList();
+                    return dto;
+                }).toList();
 
         PageResponse<CreditLimitIncreaseResponseDto> pageResponse =
                 new PageResponse<>(
@@ -265,15 +222,17 @@ public class CreditCardLimitIncreaseServiceImpl
                         resultPage.getSize(),
                         resultPage.getTotalElements(),
                         resultPage.getTotalPages(),
-                        resultPage.isLast()
-                );
+                        resultPage.isLast());
 
         return new ApiResponse<>(
                 true,
                 "Credit limit increase list fetched successfully",
-                pageResponse
-        );
+                pageResponse);
     }
+
+    // ============================================================
+    // GET BY ID
+    // ============================================================
 
     @Override
     public ApiResponse<CreditLimitIncreaseResponseDto>
@@ -285,31 +244,6 @@ public class CreditCardLimitIncreaseServiceImpl
                                 new RuntimeException(
                                         "Request not found with ID: " + id));
 
-        Integer approvedById = null;
-        String approvedByName = null;
-
-        if (req.getApprovedBy() != null) {
-
-            approvedById = req.getApprovedBy();
-
-            User user =
-                    userRepository.findById(
-                                    Long.valueOf(approvedById))
-                            .orElse(null);
-
-            if (user != null) {
-                approvedByName =
-                        user.getFirstName()
-                                + " " +
-                                user.getLastName();
-            }
-        }
-
-        String fullName =
-                req.getAccount().getCustomer().getFirstName()
-                        + " " +
-                        req.getAccount().getCustomer().getLastName();
-
         CreditLimitIncreaseResponseDto dto =
                 new CreditLimitIncreaseResponseDto();
 
@@ -317,36 +251,38 @@ public class CreditCardLimitIncreaseServiceImpl
                 req.getIncreaseCreditLimitId());
         dto.setRequestedLimit(
                 req.getRequestedLimit());
-        dto.setRequestDate(
-                req.getRequestDate());
-        dto.setApprovedBy(
-                req.getApprovedBy());
-        dto.setApprovedDate(
-                req.getApprovedDate());
+        dto.setCurrentLimitAtRequest(
+                req.getCurrentLimitAtRequest());
+        dto.setRequestDate(req.getRequestDate());
+        dto.setApprovedBy(req.getApprovedBy());
+        dto.setApprovedDate(req.getApprovedDate());
         dto.setStatus(req.getStatus());
         dto.setRemarks(req.getRemarks());
         dto.setAccountNumber(
                 req.getAccount().getAccountNumber());
 
+        String fullName =
+                req.getAccount().getCustomer().getFirstName()
+                        + " " +
+                        req.getAccount().getCustomer().getLastName();
+
         dto.setFullName(fullName);
         dto.setMobileNumber(
-                req.getAccount().getCustomer()
-                        .getMobileNumber());
+                req.getAccount().getCustomer().getMobileNumber());
         dto.setCity(
-                req.getAccount().getCustomer()
-                        .getCity());
+                req.getAccount().getCustomer().getCity());
         dto.setEmail(
-                req.getAccount().getCustomer()
-                        .getEmail());
-        dto.setApprovedByName(
-                approvedByName);
+                req.getAccount().getCustomer().getEmail());
 
         return new ApiResponse<>(
                 true,
                 "Credit limit increase request fetched successfully",
-                dto
-        );
+                dto);
     }
+
+    // ============================================================
+    // UPDATE STATUS
+    // ============================================================
 
     @Transactional
     @Override
@@ -366,28 +302,25 @@ public class CreditCardLimitIncreaseServiceImpl
                                 request.getApprovedById())
                         .orElseThrow(() ->
                                 new RuntimeException(
-                                        "User not found with ID: "
-                                                + request.getApprovedById()));
+                                        "User not found"));
 
         entity.setApprovedBy(
                 Math.toIntExact(user.getUserId()));
         entity.setApprovedDate(LocalDate.now());
 
+        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
 
-        if ("APPROVE".equalsIgnoreCase(
-                request.getAction())) {
-
-            entity.setStatus("Approved");
+            entity.setStatus("APPROVED");
             entity.setRemarks(null);
 
             Long accountNumber =
-                    entity.getAccount()
-                            .getAccountNumber();
+                    entity.getAccount().getAccountNumber();
 
             List<Card> cards =
                     cardRepository
-                            .findByAccountAccountNumber(
-                                    accountNumber);
+                            .findByAccountAccountNumberAndStatusIgnoreCase(
+                                    accountNumber,
+                                    "ACTIVE");
 
             for (Card card : cards) {
 
@@ -395,6 +328,7 @@ public class CreditCardLimitIncreaseServiceImpl
                         .getCardTypeName()
                         .equalsIgnoreCase("CREDIT")) {
 
+                    // ✅ Only card limit changes
                     card.setCurrentLimit(
                             entity.getRequestedLimit());
 
@@ -402,14 +336,10 @@ public class CreditCardLimitIncreaseServiceImpl
                 }
             }
 
-        }
+        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
 
-        else if ("REJECT".equalsIgnoreCase(
-                request.getAction())) {
-
-            entity.setStatus("Rejected");
-            entity.setRemarks(
-                    request.getRemarks());
+            entity.setStatus("REJECTED");
+            entity.setRemarks(request.getRemarks());
 
         } else {
             throw new RuntimeException(
@@ -421,36 +351,27 @@ public class CreditCardLimitIncreaseServiceImpl
         return new ApiResponse<>(
                 true,
                 "Credit limit increase status updated successfully",
-                null
-        );
+                null);
     }
+
+    // ============================================================
+    // COUNT
+    // ============================================================
 
     @Override
     public ApiResponse<RequestCountDto>
     getCreditLimitIncreaseCounts() {
 
-        RequestCountDto dto =
-                new RequestCountDto();
+        RequestCountDto dto = new RequestCountDto();
 
-        dto.setTotal(
-                repository.count());
-
-        dto.setApproved(
-                repository.countByStatusIgnoreCase(
-                        "APPROVED"));
-
-        dto.setRejected(
-                repository.countByStatusIgnoreCase(
-                        "REJECTED"));
-
-        dto.setPending(
-                repository.countByStatusIgnoreCase(
-                        "PENDING"));
+        dto.setTotal(repository.count());
+        dto.setApproved(repository.countByStatusIgnoreCase("APPROVED"));
+        dto.setRejected(repository.countByStatusIgnoreCase("REJECTED"));
+        dto.setPending(repository.countByStatusIgnoreCase("PENDING"));
 
         return new ApiResponse<>(
                 true,
                 "Credit limit request counts fetched successfully",
-                dto
-        );
+                dto);
     }
 }

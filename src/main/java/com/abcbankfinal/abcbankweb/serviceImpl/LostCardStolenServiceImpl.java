@@ -56,71 +56,45 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
     @Override
     public ApiResponse<List<LostCardResponseDTO>>
-    getLostCardsByAccountNumber(
-            Long accountNumber) {
+    getLostCardsByAccountNumber(Long accountNumber) {
 
-        List<LostCardStolen> lostCards =
-                lostCardRepo
-                        .findByAccount_AccountNumberOrderByCreatedDateDesc(
-                                accountNumber);
-
-        lostCards.sort(
-                (a, b) -> b.getCreatedDate()
-                        .compareTo(a.getCreatedDate())
-        );
+        List<Object[]> results =
+                lostCardRepo.findLostCardOptimized(accountNumber);
 
         List<LostCardResponseDTO> list =
-                lostCards.stream()
-                        .map(lc -> {
+                results.stream()
+                        .map(obj -> {
 
-                            Long approvedById = null;
-                            String approvedByName = null;
+                            LostCardResponseDTO dto =
+                                    new LostCardResponseDTO();
 
-                            if (lc.getApprovedBy() != null) {
-                                approvedById =
-                                        lc.getApprovedBy()
-                                                .getUserId();
+                            dto.setLostCardId((Long) obj[0]);
+                            dto.setLostCardNumber((Long) obj[1]);
+                            dto.setLostCardStolenDate((LocalDate) obj[2]);
+                            dto.setStatus((String) obj[3]);
+                            dto.setRemarks((String) obj[4]);
+                            dto.setAccountNumber((Long) obj[5]);
+                            dto.setCreatedDate((LocalDate) obj[6]);
+                            dto.setApprovedById((Long) obj[7]);
+                            dto.setApprovedDate((LocalDate) obj[8]);
 
-                                approvedByName =
-                                        lc.getApprovedBy()
-                                                .getFirstName()
-                                                + " " +
-                                                lc.getApprovedBy()
-                                                        .getLastName();
+                            String firstName = (String) obj[9];
+                            String lastName = (String) obj[10];
+                            dto.setFullName(firstName + " " + lastName);
+
+                            dto.setMobileNumber((String) obj[11]);
+                            dto.setCity((String) obj[12]);
+                            dto.setEmail((String) obj[13]);
+
+                            String adminFirst = (String) obj[14];
+                            String adminLast = (String) obj[15];
+
+                            if (adminFirst != null) {
+                                dto.setApprovedByName(
+                                        adminFirst + " " + adminLast);
                             }
 
-                            String fullName =
-                                    lc.getAccount()
-                                            .getCustomer()
-                                            .getFirstName()
-                                            + " " +
-                                            lc.getAccount()
-                                                    .getCustomer()
-                                                    .getLastName();
-
-                            return new LostCardResponseDTO(
-                                    lc.getLostCardId(),
-                                    lc.getLostCardNumber(),
-                                    lc.getLostCardStolenDate(),
-                                    lc.getStatus(),
-                                    lc.getRemarks(),
-                                    lc.getAccount()
-                                            .getAccountNumber(),
-                                    lc.getCreatedDate(),   // requestDate
-                                    approvedById,
-                                    lc.getApprovedDate(),
-                                    fullName,
-                                    lc.getAccount()
-                                            .getCustomer()
-                                            .getMobileNumber(),
-                                    lc.getAccount()
-                                            .getCustomer()
-                                            .getCity(),
-                                    lc.getAccount()
-                                            .getCustomer()
-                                            .getEmail(),
-                                    approvedByName
-                            );
+                            return dto;
                         })
                         .toList();
 
@@ -130,7 +104,6 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
                 list
         );
     }
-
     @Override
     public ApiResponse<PageResponse<LostCardResponseDTO>> getAllLostCards(LostCardListRequestDTO request) {
 
@@ -281,8 +254,10 @@ public class LostCardStolenServiceImpl implements LostCardStolenService {
 
             List<Card> cards =
                     cardRepository
-                            .findByAccountAccountNumber(
-                                    accountNumber);
+                            .findByAccountAccountNumberAndStatusIgnoreCase(
+                                    accountNumber,
+                                    "ACTIVE"
+                            );
 
             if (cards.isEmpty()) {
                 throw new RuntimeException(
