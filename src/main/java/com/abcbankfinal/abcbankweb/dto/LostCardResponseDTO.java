@@ -17,10 +17,11 @@ public class LostCardResponseDTO {
     private LocalDate lostCardStolenDate;
     private String status;
     private String remarks;
-    private Long accountNumber;
     private LocalDate createdDate;
     private Long approvedById;
+    private Long cardNumber;
     private LocalDate approvedDate;
+    private Long accountNumber;
     private String fullName;
     private String mobileNumber;
     private String city;

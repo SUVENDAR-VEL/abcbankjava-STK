@@ -40,7 +40,7 @@ public class QueriesResponseServiceImpl
         Queries entity = new Queries();
         entity.setCustomerQuery(dto.getCustomerQuery());
         entity.setQueryRaisedDate(LocalDate.now());
-        entity.setStatus("PENDING");
+        entity.setStatus("Pending");
         entity.setAccount(account);
 
         queriesRepo.save(entity);
@@ -204,11 +204,11 @@ public class QueriesResponseServiceImpl
 
         if ("APPROVE".equalsIgnoreCase(request.getAction())) {
 
-            query.setStatus("APPROVED");
+            query.setStatus("Approved");
 
         } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
 
-            query.setStatus("REJECTED");
+            query.setStatus("Rejected");
 
         } else {
             throw new RuntimeException(

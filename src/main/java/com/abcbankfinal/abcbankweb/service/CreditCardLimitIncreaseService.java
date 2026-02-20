@@ -8,25 +8,20 @@ import java.util.List;
 public interface CreditCardLimitIncreaseService {
 
     ApiResponse<CreditLimitIncreaseResponseDto>
-    saveCreditLimitIncrease(
-            CreditLimitIncreaseSaveDto dto);
+    saveCreditLimitIncrease(CreditLimitIncreaseSaveDto dto);
 
     ApiResponse<List<CreditLimitIncreaseResponseDto>>
-    getByAccountNumber(
-            Long accountNumber);
+    getByCardNumber(Long cardNumber);
 
     ApiResponse<PageResponse<CreditLimitIncreaseResponseDto>>
-    getAllCreditLimitIncreases(
-            CreditLimitIncreaseListRequestDTO request);
+    getAllCreditLimitIncreases(CreditLimitIncreaseListRequestDTO request);
 
     ApiResponse<CreditLimitIncreaseResponseDto>
-    getCreditLimitIncreaseById(
-            Long id);
+    getCreditLimitIncreaseById(Long id);
 
     ApiResponse<String>
-    updateCreditLimitIncreaseStatus(
-            Long id,
-            CreditLimitIncreaseUpdateDTO request);
+    updateCreditLimitIncreaseStatus(Long id,
+                                    CreditLimitIncreaseUpdateDTO request);
 
     ApiResponse<RequestCountDto>
     getCreditLimitIncreaseCounts();

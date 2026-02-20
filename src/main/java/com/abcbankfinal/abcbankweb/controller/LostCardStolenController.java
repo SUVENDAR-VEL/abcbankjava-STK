@@ -1,9 +1,9 @@
 package com.abcbankfinal.abcbankweb.controller;
+
 import com.abcbankfinal.abcbankweb.dto.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
 import com.abcbankfinal.abcbankweb.service.LostCardStolenService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,12 +23,12 @@ public class LostCardStolenController {
     }
 
     @PostMapping("/lostRequestList")
-    public ApiResponse<List<LostCardResponseDTO>> getByAccountNumber(
-            @RequestBody LostCardListByAccountRequestDTO request) {
+    public ApiResponse<List<LostCardResponseDTO>> getByCardNumber(
+            @RequestBody LostCardListByCardRequestDTO request) {
 
-        return lostCardStolenService.getLostCardsByAccountNumber(request.getAccountNumber());
+        return lostCardStolenService
+                .getLostCardsByCardNumber(request.getCardNumber());
     }
-
 
     @PostMapping("/adminLastCardList")
     public ApiResponse<PageResponse<LostCardResponseDTO>> listLostCards(
@@ -37,11 +37,9 @@ public class LostCardStolenController {
         return lostCardStolenService.getAllLostCards(request);
     }
 
-
     @GetMapping("/lostCardBy/{id}")
     public ApiResponse<LostCardResponseDTO> getById(@PathVariable Long id) {
         return lostCardStolenService.getById(id);
-
     }
 
     @PostMapping("/lostCardUpdateAdmin/{id}")
@@ -52,10 +50,7 @@ public class LostCardStolenController {
     }
 
     @GetMapping("/count")
-    public ApiResponse<RequestCountDto>
-    getLostCardCounts() {
-
-        return lostCardStolenService
-                .getLostCardCounts();
+    public ApiResponse<RequestCountDto> getLostCardCounts() {
+        return lostCardStolenService.getLostCardCounts();
     }
 }

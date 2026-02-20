@@ -2,7 +2,6 @@ package com.abcbankfinal.abcbankweb.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Entity
@@ -24,13 +23,9 @@ public class LostCardStolen {
     @Column(name = "created_date")
     private LocalDate createdDate;
 
-//    @Column(name = "approved_by")
-//    private Long approvedBy;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private User approvedBy;
-
 
     @Column(name = "approved_date")
     private LocalDate approvedDate;
@@ -42,6 +37,6 @@ public class LostCardStolen {
     private String remarks;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_number", nullable = false)
-    private Account account;
+    @JoinColumn(name = "card_id", nullable = false)
+    private Card card;
 }

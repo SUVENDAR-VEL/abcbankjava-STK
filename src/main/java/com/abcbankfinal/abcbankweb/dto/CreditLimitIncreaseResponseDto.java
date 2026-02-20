@@ -16,6 +16,7 @@ public class CreditLimitIncreaseResponseDto {
     private String remarks;
 
     private String status;
+    private Long cardNumber;
     private Long accountNumber;
     private String fullName;
     private String mobileNumber;

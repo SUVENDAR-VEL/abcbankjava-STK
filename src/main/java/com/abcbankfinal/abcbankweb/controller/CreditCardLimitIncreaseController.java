@@ -20,37 +20,27 @@ public class CreditCardLimitIncreaseController {
     public ApiResponse<CreditLimitIncreaseResponseDto>
     saveCreditLimitIncrease(
             @RequestBody CreditLimitIncreaseSaveDto dto) {
-
-        return service
-                .saveCreditLimitIncrease(dto);
+        return service.saveCreditLimitIncrease(dto);
     }
 
-    @PostMapping("/creditLimitListByAccount")
+    @PostMapping("/creditLimitListByCard")
     public ApiResponse<List<CreditLimitIncreaseResponseDto>>
-    getByAccountNumber(
-            @RequestBody CreditLimitIncreaseListByAccountRequestDTO request) {
-
-        return service
-                .getByAccountNumber(
-                        request.getAccountNumber());
+    getByCardNumber(@RequestBody
+                    CreditLimitIncreaseListByCardRequestDTO request) {
+        return service.getByCardNumber(request.getCardNumber());
     }
 
     @PostMapping("/adminCreditLimitList")
     public ApiResponse<PageResponse<CreditLimitIncreaseResponseDto>>
     getAllCreditLimitIncreases(
             @RequestBody CreditLimitIncreaseListRequestDTO request) {
-
-        return service
-                .getAllCreditLimitIncreases(request);
+        return service.getAllCreditLimitIncreases(request);
     }
 
     @GetMapping("/creditLimitBy/{id}")
     public ApiResponse<CreditLimitIncreaseResponseDto>
-    getCreditLimitIncreaseById(
-            @PathVariable Long id) {
-
-        return service
-                .getCreditLimitIncreaseById(id);
+    getCreditLimitIncreaseById(@PathVariable Long id) {
+        return service.getCreditLimitIncreaseById(id);
     }
 
     @PostMapping("/creditLimitUpdateAdmin/{id}")
@@ -58,18 +48,12 @@ public class CreditCardLimitIncreaseController {
     updateCreditLimitIncreaseStatus(
             @PathVariable Long id,
             @RequestBody CreditLimitIncreaseUpdateDTO request) {
-
-        return service
-                .updateCreditLimitIncreaseStatus(id, request);
+        return service.updateCreditLimitIncreaseStatus(id, request);
     }
 
     @GetMapping("/count")
     public ApiResponse<RequestCountDto>
     getCreditLimitIncreaseCounts() {
-
-        return service
-                .getCreditLimitIncreaseCounts();
+        return service.getCreditLimitIncreaseCounts();
     }
-
 }
-

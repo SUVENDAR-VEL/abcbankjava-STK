@@ -3,8 +3,7 @@ package com.abcbankfinal.abcbankweb.dto;
 import lombok.Data;
 
 @Data
-public class CreditLimitIncreaseSaveDto {
+public class CreditLimitIncreaseListByCardRequestDTO {
 
-    private Double requestedLimit;
     private Long cardNumber;
 }
