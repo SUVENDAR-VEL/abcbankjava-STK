@@ -22,4 +22,11 @@ public class CardController {
     public ApiResponse<List<CardDto>> getCardsByAccountNumber(@PathVariable Long accountNumber) {
         return cardService.getCardsByAccountNumber(accountNumber);
     }
+
+    @GetMapping("/account/{accountNumber}/credit")
+    public ApiResponse<List<CardDto>> getActiveCreditCardsByAccountNumber(
+            @PathVariable Long accountNumber) {
+
+        return cardService.getActiveCreditCardsByAccountNumber(accountNumber);
+    }
 }

@@ -1,12 +1,9 @@
 package com.abcbankfinal.abcbankweb.serviceImpl;
 
 import com.abcbankfinal.abcbankweb.dto.*;
-import com.abcbankfinal.abcbankweb.model.Card;
-import com.abcbankfinal.abcbankweb.model.CreditCardLimitIncrease;
-import com.abcbankfinal.abcbankweb.model.User;
+import com.abcbankfinal.abcbankweb.model.*;
 import com.abcbankfinal.abcbankweb.repository.*;
 import com.abcbankfinal.abcbankweb.response.ApiResponse;
-import com.abcbankfinal.abcbankweb.service.AccountFullDetailsProjection;
 import com.abcbankfinal.abcbankweb.service.CreditCardLimitIncreaseService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +21,6 @@ public class CreditCardLimitIncreaseServiceImpl
     private final CreditCardLimitIncreaseRepository repository;
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
-    private final AccountRepository accountRepository;
-
-    // ======================================================
-    // SAVE REQUEST
-    // ======================================================
 
     @Override
     public ApiResponse<CreditLimitIncreaseResponseDto>
@@ -57,10 +49,6 @@ public class CreditCardLimitIncreaseServiceImpl
                 mapToDto(entity));
     }
 
-    // ======================================================
-    // LIST BY CARD
-    // ======================================================
-
     @Override
     public ApiResponse<List<CreditLimitIncreaseResponseDto>>
     getByCardNumber(Long cardNumber) {
@@ -73,10 +61,6 @@ public class CreditCardLimitIncreaseServiceImpl
                 list.stream().map(this::mapToDto).toList());
     }
 
-    // ======================================================
-    // ADMIN LIST
-    // ======================================================
-
     @Override
     public ApiResponse<PageResponse<CreditLimitIncreaseResponseDto>>
     getAllCreditLimitIncreases(
@@ -84,8 +68,8 @@ public class CreditCardLimitIncreaseServiceImpl
 
         Pageable pageable = PageRequest.of(
                 request.getPage(),
-                request.getSize(),
-                Sort.by("requestDate").descending());
+                request.getSize()
+        );
 
         Page<CreditCardLimitIncrease> page =
                 repository.findAllWithFilter(
@@ -93,7 +77,9 @@ public class CreditCardLimitIncreaseServiceImpl
                         pageable);
 
         List<CreditLimitIncreaseResponseDto> content =
-                page.stream().map(this::mapToDto).toList();
+                page.stream()
+                        .map(this::mapToDto)
+                        .toList();
 
         return new ApiResponse<>(true,
                 "Credit limit list fetched successfully",
@@ -105,10 +91,6 @@ public class CreditCardLimitIncreaseServiceImpl
                         page.getTotalPages(),
                         page.isLast()));
     }
-
-    // ======================================================
-    // GET BY ID
-    // ======================================================
 
     @Override
     public ApiResponse<CreditLimitIncreaseResponseDto>
@@ -123,10 +105,6 @@ public class CreditCardLimitIncreaseServiceImpl
                 "Request fetched successfully",
                 mapToDto(entity));
     }
-
-    // ======================================================
-    // UPDATE STATUS
-    // ======================================================
 
     @Transactional
     @Override
@@ -172,10 +150,6 @@ public class CreditCardLimitIncreaseServiceImpl
                 null);
     }
 
-    // ======================================================
-    // COUNT
-    // ======================================================
-
     @Override
     public ApiResponse<RequestCountDto>
     getCreditLimitIncreaseCounts() {
@@ -191,10 +165,6 @@ public class CreditCardLimitIncreaseServiceImpl
                 dto);
     }
 
-    // ======================================================
-    // MAPPER (Using AccountFullDetailsProjection)
-    // ======================================================
-
     private CreditLimitIncreaseResponseDto
     mapToDto(CreditCardLimitIncrease entity) {
 
@@ -209,32 +179,26 @@ public class CreditCardLimitIncreaseServiceImpl
         dto.setApprovedDate(entity.getApprovedDate());
         dto.setStatus(entity.getStatus());
         dto.setRemarks(entity.getRemarks());
-        dto.setCardNumber(entity.getCard().getCardNumber());
 
-        Long accountNumber =
-                entity.getCard().getAccount().getAccountNumber();
+        Card card = entity.getCard();
+        dto.setCardNumber(card.getCardNumber());
 
-        dto.setAccountNumber(accountNumber);
+        var customer = card.getAccount().getCustomer();
 
-        AccountFullDetailsProjection acc =
-                accountRepository.findAccountFullDetails(accountNumber);
-
-        if (acc != null) {
-            dto.setFullName(acc.getFirstName() + " " + acc.getLastName());
-            dto.setMobileNumber(acc.getMobileNumber());
-            dto.setCity(acc.getCity());
-            dto.setEmail(acc.getEmail());
-        }
+        dto.setAccountNumber(card.getAccount().getAccountNumber());
+        dto.setFullName(customer.getFirstName() + " " + customer.getLastName());
+        dto.setMobileNumber(customer.getMobileNumber());
+        dto.setCity(customer.getCity());
+        dto.setEmail(customer.getEmail());
 
         if (entity.getApprovedBy() != null) {
-            User user = userRepository
-                    .findById(Long.valueOf(entity.getApprovedBy()))
-                    .orElse(null);
-
-            if (user != null) {
-                dto.setApprovedByName(
-                        user.getFirstName() + " " + user.getLastName());
-            }
+            userRepository.findById(
+                            Long.valueOf(entity.getApprovedBy()))
+                    .ifPresent(user ->
+                            dto.setApprovedByName(
+                                    user.getFirstName()
+                                            + " " +
+                                            user.getLastName()));
         }
 
         return dto;

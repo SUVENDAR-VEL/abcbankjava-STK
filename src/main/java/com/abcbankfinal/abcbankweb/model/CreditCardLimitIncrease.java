@@ -14,7 +14,7 @@ public class CreditCardLimitIncrease {
     @Column(name = "increase_credit_id")
     private Long increaseCreditLimitId;
 
-    @Column(name = "request_date", nullable = false)
+    @Column(name = "requested_date", nullable = false)
     private LocalDate requestDate;
 
     @Column(name = "requested_limit", nullable = false)

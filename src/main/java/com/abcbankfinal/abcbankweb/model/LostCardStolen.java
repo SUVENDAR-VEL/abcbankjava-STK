@@ -20,7 +20,7 @@ public class LostCardStolen {
     @Column(name = "lost_card_number")
     private Long lostCardNumber;
 
-    @Column(name = "created_date")
+    @Column(name = "requested_date")
     private LocalDate createdDate;
 
     @ManyToOne(fetch = FetchType.LAZY)

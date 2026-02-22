@@ -26,12 +26,9 @@ public class LostCardStolenServiceImpl
     private final CardRepository cardRepo;
     private final UserRepository userRepo;
 
-    // -------------------------------------------------------
-    // SAVE
-    // -------------------------------------------------------
     @Override
-    public ApiResponse<String>
-    saveLostCard(LostCardSaveRequestDTO dto) {
+    public ApiResponse<String> saveLostCard(
+            LostCardSaveRequestDTO dto) {
 
         Card card = cardRepo.findByCardNumber(
                         dto.getCardNumber())
@@ -46,15 +43,10 @@ public class LostCardStolenServiceImpl
             );
         }
 
-        LostCardStolen entity =
-                new LostCardStolen();
-
-        entity.setLostCardNumber(
-                dto.getCardNumber());
-        entity.setLostCardStolenDate(
-                dto.getLostCardStolenDate());
-        entity.setCreatedDate(
-                LocalDate.now());
+        LostCardStolen entity = new LostCardStolen();
+        entity.setLostCardNumber(dto.getCardNumber());
+        entity.setLostCardStolenDate(dto.getLostCardStolenDate());
+        entity.setCreatedDate(LocalDate.now());
         entity.setStatus("Pending");
         entity.setCard(card);
 
@@ -67,86 +59,22 @@ public class LostCardStolenServiceImpl
         );
     }
 
-    // -------------------------------------------------------
-    // CUSTOMER LIST – BY CARD NUMBER
-    // -------------------------------------------------------
     @Override
     public ApiResponse<List<LostCardResponseDTO>>
     getLostCardsByCardNumber(Long cardNumber) {
 
-        List<Object[]> results =
-                lostCardRepo.findLostCardByCardNumber(
-                        cardNumber);
-
-        List<LostCardResponseDTO> list =
-                results.stream()
-                        .map(obj -> {
-
-                            LostCardResponseDTO dto =
-                                    new LostCardResponseDTO();
-
-                            dto.setLostCardId((Long) obj[0]);
-                            dto.setLostCardNumber((Long) obj[1]);
-                            dto.setLostCardStolenDate(
-                                    (LocalDate) obj[2]);
-                            dto.setStatus((String) obj[3]);
-                            dto.setRemarks((String) obj[4]);
-                            dto.setCreatedDate(
-                                    (LocalDate) obj[5]);
-                            dto.setApprovedById(
-                                    (Long) obj[6]);
-                            dto.setApprovedDate(
-                                    (LocalDate) obj[7]);
-                            dto.setCardNumber(
-                                    (Long) obj[8]);
-                            dto.setAccountNumber(
-                                    (Long) obj[9]);
-
-                            // Customer
-                            String first =
-                                    (String) obj[10];
-                            String last =
-                                    (String) obj[11];
-
-                            if (first != null) {
-                                dto.setFullName(
-                                        first + " " + last);
-                            }
-
-                            dto.setMobileNumber(
-                                    (String) obj[12]);
-                            dto.setCity(
-                                    (String) obj[13]);
-                            dto.setEmail(
-                                    (String) obj[14]);
-
-                            // Admin
-                            String adminFirst =
-                                    (String) obj[15];
-                            String adminLast =
-                                    (String) obj[16];
-
-                            if (adminFirst != null) {
-                                dto.setApprovedByName(
-                                        adminFirst
-                                                + " "
-                                                + adminLast);
-                            }
-
-                            return dto;
-                        })
-                        .toList();
+        List<LostCardStolen> list =
+                lostCardRepo.findLostCardByCardNumber(cardNumber);
 
         return new ApiResponse<>(
                 true,
                 "Lost card list fetched successfully",
-                list
+                list.stream()
+                        .map(this::mapToDto)
+                        .toList()
         );
     }
 
-    // -------------------------------------------------------
-    // ADMIN LIST – PAGINATION
-    // -------------------------------------------------------
     @Override
     public ApiResponse<PageResponse<LostCardResponseDTO>>
     getAllLostCards(LostCardListRequestDTO request) {
@@ -154,96 +82,21 @@ public class LostCardStolenServiceImpl
         Pageable pageable =
                 PageRequest.of(
                         request.getPage(),
-                        request.getSize(),
-                        Sort.by("createdDate")
-                                .descending()
+                        request.getSize()
                 );
 
         Page<LostCardStolen> page =
-                (request.getStatus() == null ||
-                        request.getStatus().isBlank())
-                        ? lostCardRepo.findAll(pageable)
-                        : lostCardRepo.findByStatus(
-                        request.getStatus()
-                                .toUpperCase(),
-                        pageable);
+                lostCardRepo.findAllWithCustomer(
+                        request.getStatus(),
+                        pageable
+                );
 
         List<LostCardResponseDTO> content =
                 page.stream()
-                        .map(entity -> {
-
-                            LostCardResponseDTO dto =
-                                    new LostCardResponseDTO();
-
-                            dto.setLostCardId(
-                                    entity.getLostCardId());
-                            dto.setLostCardNumber(
-                                    entity.getLostCardNumber());
-                            dto.setLostCardStolenDate(
-                                    entity.getLostCardStolenDate());
-                            dto.setStatus(
-                                    entity.getStatus());
-                            dto.setRemarks(
-                                    entity.getRemarks());
-                            dto.setCreatedDate(
-                                    entity.getCreatedDate());
-                            dto.setApprovedDate(
-                                    entity.getApprovedDate());
-
-                            Card card =
-                                    entity.getCard();
-
-                            dto.setCardNumber(
-                                    card.getCardNumber());
-                            dto.setAccountNumber(
-                                    card.getAccount()
-                                            .getAccountNumber());
-
-                            // Customer
-                            dto.setFullName(
-                                    card.getAccount()
-                                            .getCustomer()
-                                            .getFirstName()
-                                            + " "
-                                            +
-                                            card.getAccount()
-                                                    .getCustomer()
-                                                    .getLastName());
-
-                            dto.setMobileNumber(
-                                    card.getAccount()
-                                            .getCustomer()
-                                            .getMobileNumber());
-                            dto.setCity(
-                                    card.getAccount()
-                                            .getCustomer()
-                                            .getCity());
-                            dto.setEmail(
-                                    card.getAccount()
-                                            .getCustomer()
-                                            .getEmail());
-
-                            // Admin
-                            if (entity.getApprovedBy() != null) {
-
-                                dto.setApprovedById(
-                                        entity.getApprovedBy()
-                                                .getUserId());
-
-                                dto.setApprovedByName(
-                                        entity.getApprovedBy()
-                                                .getFirstName()
-                                                + " "
-                                                +
-                                                entity.getApprovedBy()
-                                                        .getLastName());
-                            }
-
-                            return dto;
-                        })
+                        .map(this::mapToDto)
                         .toList();
 
-        PageResponse<LostCardResponseDTO> pageResponse =
+        PageResponse<LostCardResponseDTO> response =
                 new PageResponse<>(
                         content,
                         page.getNumber(),
@@ -256,16 +109,12 @@ public class LostCardStolenServiceImpl
         return new ApiResponse<>(
                 true,
                 "Lost card list fetched successfully",
-                pageResponse
+                response
         );
     }
 
-    // -------------------------------------------------------
-    // GET BY ID
-    // -------------------------------------------------------
     @Override
-    public ApiResponse<LostCardResponseDTO>
-    getById(Long id) {
+    public ApiResponse<LostCardResponseDTO> getById(Long id) {
 
         LostCardStolen entity =
                 lostCardRepo.findById(id)
@@ -273,81 +122,16 @@ public class LostCardStolenServiceImpl
                                 new RuntimeException(
                                         "Lost card request not found"));
 
-        Card card = entity.getCard();
-
-        LostCardResponseDTO dto =
-                new LostCardResponseDTO();
-
-        dto.setLostCardId(
-                entity.getLostCardId());
-        dto.setLostCardNumber(
-                entity.getLostCardNumber());
-        dto.setLostCardStolenDate(
-                entity.getLostCardStolenDate());
-        dto.setStatus(
-                entity.getStatus());
-        dto.setRemarks(
-                entity.getRemarks());
-        dto.setCreatedDate(
-                entity.getCreatedDate());
-        dto.setApprovedDate(
-                entity.getApprovedDate());
-        dto.setCardNumber(
-                card.getCardNumber());
-        dto.setAccountNumber(
-                card.getAccount()
-                        .getAccountNumber());
-
-        dto.setFullName(
-                card.getAccount()
-                        .getCustomer()
-                        .getFirstName()
-                        + " "
-                        +
-                        card.getAccount()
-                                .getCustomer()
-                                .getLastName());
-
-        dto.setMobileNumber(
-                card.getAccount()
-                        .getCustomer()
-                        .getMobileNumber());
-        dto.setCity(
-                card.getAccount()
-                        .getCustomer()
-                        .getCity());
-        dto.setEmail(
-                card.getAccount()
-                        .getCustomer()
-                        .getEmail());
-
-        if (entity.getApprovedBy() != null) {
-            dto.setApprovedById(
-                    entity.getApprovedBy()
-                            .getUserId());
-            dto.setApprovedByName(
-                    entity.getApprovedBy()
-                            .getFirstName()
-                            + " "
-                            +
-                            entity.getApprovedBy()
-                                    .getLastName());
-        }
-
         return new ApiResponse<>(
                 true,
                 "Lost card fetched successfully",
-                dto
+                mapToDto(entity)
         );
     }
 
-    // -------------------------------------------------------
-    // UPDATE STATUS
-    // -------------------------------------------------------
     @Transactional
     @Override
-    public ApiResponse<String>
-    updateLostCard(
+    public ApiResponse<String> updateLostCard(
             Long id,
             LostCardUpdateRequestDTO request) {
 
@@ -358,17 +142,14 @@ public class LostCardStolenServiceImpl
                                         "Lost card request not found"));
 
         User admin =
-                userRepo.findById(
-                                request.getApprovedById())
+                userRepo.findById(request.getApprovedById())
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Admin not found"));
+                                new RuntimeException("Admin not found"));
 
         entity.setApprovedBy(admin);
         entity.setApprovedDate(LocalDate.now());
 
-        if ("APPROVE".equalsIgnoreCase(
-                request.getAction())) {
+        if ("APPROVE".equalsIgnoreCase(request.getAction())) {
 
             entity.setStatus("Approved");
 
@@ -376,19 +157,15 @@ public class LostCardStolenServiceImpl
             card.setStatus("Blocked");
             cardRepo.save(card);
 
-        } else if ("REJECT".equalsIgnoreCase(
-                request.getAction())) {
+        } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
 
             entity.setStatus("Rejected");
-            entity.setRemarks(
-                    request.getRemarks());
+            entity.setRemarks(request.getRemarks());
 
         } else {
             throw new RuntimeException(
                     "Invalid action. Use APPROVE or REJECT");
         }
-
-        lostCardRepo.save(entity);
 
         return new ApiResponse<>(
                 true,
@@ -397,32 +174,63 @@ public class LostCardStolenServiceImpl
         );
     }
 
-    // -------------------------------------------------------
-    // COUNT
-    // -------------------------------------------------------
     @Override
-    public ApiResponse<RequestCountDto>
-    getLostCardCounts() {
+    public ApiResponse<RequestCountDto> getLostCardCounts() {
 
-        RequestCountDto dto =
-                new RequestCountDto();
-
-        dto.setTotal(
-                lostCardRepo.count());
-        dto.setApproved(
-                lostCardRepo.countByStatusIgnoreCase(
-                        "APPROVED"));
-        dto.setRejected(
-                lostCardRepo.countByStatusIgnoreCase(
-                        "REJECTED"));
-        dto.setPending(
-                lostCardRepo.countByStatusIgnoreCase(
-                        "PENDING"));
+        RequestCountDto dto = new RequestCountDto();
+        dto.setTotal(lostCardRepo.count());
+        dto.setApproved(lostCardRepo.countByStatusIgnoreCase("APPROVED"));
+        dto.setRejected(lostCardRepo.countByStatusIgnoreCase("REJECTED"));
+        dto.setPending(lostCardRepo.countByStatusIgnoreCase("PENDING"));
 
         return new ApiResponse<>(
                 true,
                 "Lost card request counts fetched successfully",
                 dto
         );
+    }
+
+    private LostCardResponseDTO mapToDto(
+            LostCardStolen entity) {
+
+        Card card = entity.getCard();
+
+        LostCardResponseDTO dto =
+                new LostCardResponseDTO();
+
+        dto.setLostCardId(entity.getLostCardId());
+        dto.setLostCardNumber(entity.getLostCardNumber());
+        dto.setLostCardStolenDate(entity.getLostCardStolenDate());
+        dto.setStatus(entity.getStatus());
+        dto.setRemarks(entity.getRemarks());
+        dto.setCreatedDate(entity.getCreatedDate());
+        dto.setApprovedDate(entity.getApprovedDate());
+
+        dto.setCardNumber(card.getCardNumber());
+        dto.setAccountNumber(
+                card.getAccount().getAccountNumber());
+
+        dto.setFullName(
+                card.getAccount().getCustomer().getFirstName()
+                        + " "
+                        + card.getAccount().getCustomer().getLastName());
+
+        dto.setMobileNumber(
+                card.getAccount().getCustomer().getMobileNumber());
+        dto.setCity(
+                card.getAccount().getCustomer().getCity());
+        dto.setEmail(
+                card.getAccount().getCustomer().getEmail());
+
+        if (entity.getApprovedBy() != null) {
+            dto.setApprovedById(
+                    entity.getApprovedBy().getUserId());
+            dto.setApprovedByName(
+                    entity.getApprovedBy().getFirstName()
+                            + " "
+                            + entity.getApprovedBy().getLastName());
+        }
+
+        return dto;
     }
 }

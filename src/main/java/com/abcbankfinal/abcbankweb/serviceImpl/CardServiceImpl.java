@@ -63,4 +63,51 @@ public class CardServiceImpl implements CardService {
                 cardDtos
         );
     }
+
+    @Override
+    public ApiResponse<List<CardDto>> getActiveCreditCardsByAccountNumber(Long accountNumber) {
+
+        List<Card> cards =
+                cardRepository
+                        .findByAccountAccountNumberAndStatusIgnoreCaseAndCardType_CardTypeNameIgnoreCase(
+                                accountNumber,
+                                "ACTIVE",
+                                "CREDIT"
+                        );
+
+        if (cards.isEmpty()) {
+            return new ApiResponse<>(
+                    false,
+                    "No active credit cards found for this account number",
+                    null
+            );
+        }
+
+        List<CardDto> cardDtos =
+                cards.stream()
+                        .map(card -> {
+                            CardDto dto = new CardDto();
+                            dto.setCardId(card.getCardId());
+                            dto.setCardNumber(card.getCardNumber());
+                            dto.setCurrentLimit(card.getCurrentLimit());
+                            dto.setIssuedDate(card.getIssuedDate());
+                            dto.setExpiryDate(card.getExpiryDate());
+                            dto.setStatus(card.getStatus());
+                            dto.setMaxLimit(card.getMaxLimit());
+                            dto.setCardTypeName(
+                                    card.getCardType().getCardTypeName()
+                            );
+                            dto.setAccountNumber(
+                                    card.getAccount().getAccountNumber()
+                            );
+                            return dto;
+                        })
+                        .toList();
+
+        return new ApiResponse<>(
+                true,
+                "Active credit cards fetched successfully",
+                cardDtos
+        );
+    }
 }

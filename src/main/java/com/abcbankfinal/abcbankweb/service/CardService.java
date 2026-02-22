@@ -8,4 +8,6 @@ import java.util.List;
 public interface CardService {
 
     ApiResponse<List<CardDto>> getCardsByAccountNumber(Long accountNumber);
+
+    ApiResponse<List<CardDto>> getActiveCreditCardsByAccountNumber(Long accountNumber);
 }

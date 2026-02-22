@@ -18,16 +18,16 @@ public class Queries {
     @Column(name = "customer_query", length = 225)
     private String customerQuery;
 
-    @Column(name = "query_raised_date")
+    @Column(name = "requested_date")
     private LocalDate queryRaisedDate;
 
-    @Column(name = "query_response", length = 225)
+    @Column(name = "remarks", length = 225)
     private String queryResponse;
 
-    @Column(name = "query_approved_by")
+    @Column(name = "approved_by")
     private Integer queryApprovedBy;
 
-    @Column(name = "query_approved_date")
+    @Column(name = "approved_date")
     private LocalDate queryApprovedDate;
 
     @Column(name = "status", length = 10)

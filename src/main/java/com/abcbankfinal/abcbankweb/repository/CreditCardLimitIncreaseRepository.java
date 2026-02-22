@@ -11,7 +11,7 @@ import java.util.List;
 public interface CreditCardLimitIncreaseRepository
         extends JpaRepository<CreditCardLimitIncrease, Long> {
 
-    // ✅ Optimized List by Card Number
+
     @Query("""
         SELECT c
         FROM CreditCardLimitIncrease c
@@ -19,20 +19,20 @@ public interface CreditCardLimitIncreaseRepository
         JOIN FETCH cd.account acc
         JOIN FETCH acc.customer cust
         WHERE cd.cardNumber = :cardNumber
-        ORDER BY c.requestDate DESC
+        ORDER BY c.increaseCreditLimitId DESC
     """)
     List<CreditCardLimitIncrease> findByCardNumberOptimized(
             @Param("cardNumber") Long cardNumber);
 
 
-    // ✅ Optimized Admin List
     @Query("""
         SELECT c
         FROM CreditCardLimitIncrease c
         JOIN FETCH c.card cd
         JOIN FETCH cd.account acc
         JOIN FETCH acc.customer cust
-        WHERE (:status IS NULL OR :status = '' OR c.status = :status)
+        WHERE (:status IS NULL OR :status = '' OR LOWER(c.status) = LOWER(:status))
+        ORDER BY c.increaseCreditLimitId DESC
     """)
     Page<CreditCardLimitIncrease> findAllWithFilter(
             @Param("status") String status,

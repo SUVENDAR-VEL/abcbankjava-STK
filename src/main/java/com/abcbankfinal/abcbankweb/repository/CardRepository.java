@@ -18,4 +18,10 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     boolean existsByAccountAccountNumber(Long accountNumber);
 
     Optional<Card> findByCardNumber(Long cardNumber);
+
+    List<Card> findByAccountAccountNumberAndStatusIgnoreCaseAndCardType_CardTypeNameIgnoreCase(
+            Long accountNumber,
+            String status,
+            String cardTypeName
+    );
 }

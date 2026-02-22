@@ -26,11 +26,9 @@ public class QueriesResponseServiceImpl
     private final AccountRepository accountRepo;
     private final UserRepository userRepository;
 
-    // ================= SAVE QUERY =================
-
     @Override
-    public ApiResponse<QueriesResponseDto>
-    saveQuery(QueriesSaveDto dto) {
+    public ApiResponse<QueriesResponseDto> saveQuery(
+            QueriesSaveDto dto) {
 
         Account account =
                 accountRepo.findById(dto.getAccountNumber())
@@ -52,98 +50,51 @@ public class QueriesResponseServiceImpl
         );
     }
 
-    // ================= GET BY ACCOUNT =================
-
     @Override
     public ApiResponse<List<QueriesResponseDto>>
     getByAccountNumber(Long accountNumber) {
 
-        List<Object[]> results =
-                queriesRepo.findQueriesOptimized(accountNumber);
-
-        List<QueriesResponseDto> list =
-                results.stream()
-                        .map(obj -> {
-
-                            QueriesResponseDto dto =
-                                    new QueriesResponseDto();
-
-                            dto.setQueriesId((Long) obj[0]);
-                            dto.setCustomerQuery((String) obj[1]);
-                            dto.setQueryRaisedDate((LocalDate) obj[2]);
-                            dto.setQueryResponse((String) obj[3]);
-                            dto.setQueryApprovedBy((Integer) obj[4]);
-                            dto.setQueryApprovedDate((LocalDate) obj[5]);
-                            dto.setStatus((String) obj[6]);
-                            dto.setAccountNumber((Long) obj[7]);
-
-                            String firstName = (String) obj[8];
-                            String lastName = (String) obj[9];
-                            dto.setFullName(firstName + " " + lastName);
-
-                            dto.setMobileNumber((String) obj[10]);
-                            dto.setCity((String) obj[11]);
-                            dto.setEmail((String) obj[12]);
-
-                            String adminFirst = (String) obj[13];
-                            String adminLast = (String) obj[14];
-
-                            if (adminFirst != null) {
-                                dto.setApprovedByName(
-                                        adminFirst + " " + adminLast);
-                            }
-
-                            return dto;
-                        })
-                        .toList();
+        List<Queries> list =
+                queriesRepo.findQueriesByAccountNumber(accountNumber);
 
         return new ApiResponse<>(
                 true,
                 "Queries fetched successfully",
-                list
+                list.stream()
+                        .map(this::mapToDto)
+                        .toList()
         );
     }
-
-    // ================= GET ALL (PAGINATION) =================
 
     @Override
     public ApiResponse<PageResponse<QueriesResponseDto>>
     getAllQueries(QueriesListRequestDto request) {
 
-        Pageable pageable = PageRequest.of(
-                request.getPage(),
-                request.getSize(),
-                Sort.by("queryRaisedDate").descending()
-        );
+        Pageable pageable =
+                PageRequest.of(
+                        request.getPage(),
+                        request.getSize()
+                );
 
-        Page<Queries> resultPage;
-
-        if (request.getStatus() == null ||
-                request.getStatus().isBlank()) {
-
-            resultPage = queriesRepo.findAll(pageable);
-
-        } else {
-
-            resultPage =
-                    queriesRepo.findByStatus(
-                            request.getStatus().toUpperCase(),
-                            pageable);
-        }
+        Page<Queries> page =
+                queriesRepo.findAllWithCustomer(
+                        request.getStatus(),
+                        pageable
+                );
 
         List<QueriesResponseDto> content =
-                resultPage.stream()
+                page.stream()
                         .map(this::mapToDto)
                         .toList();
 
         PageResponse<QueriesResponseDto> pageResponse =
                 new PageResponse<>(
                         content,
-                        resultPage.getNumber(),
-                        resultPage.getSize(),
-                        resultPage.getTotalElements(),
-                        resultPage.getTotalPages(),
-                        resultPage.isLast()
+                        page.getNumber(),
+                        page.getSize(),
+                        page.getTotalElements(),
+                        page.getTotalPages(),
+                        page.isLast()
                 );
 
         return new ApiResponse<>(
@@ -152,8 +103,6 @@ public class QueriesResponseServiceImpl
                 pageResponse
         );
     }
-
-    // ================= GET BY ID =================
 
     @Override
     public ApiResponse<QueriesResponseDto>
@@ -173,12 +122,9 @@ public class QueriesResponseServiceImpl
         );
     }
 
-    // ================= UPDATE STATUS =================
-
     @Transactional
     @Override
-    public ApiResponse<String>
-    updateQueryStatus(
+    public ApiResponse<String> updateQueryStatus(
             Long queryId,
             QueriesUpdateRequestDto request) {
 
@@ -190,12 +136,9 @@ public class QueriesResponseServiceImpl
                                                 + queryId));
 
         User user =
-                userRepository.findById(
-                                request.getApprovedById())
+                userRepository.findById(request.getApprovedById())
                         .orElseThrow(() ->
-                                new RuntimeException(
-                                        "User not found with ID: "
-                                                + request.getApprovedById()));
+                                new RuntimeException("User not found"));
 
         query.setQueryApprovedBy(
                 Math.toIntExact(user.getUserId()));
@@ -203,19 +146,13 @@ public class QueriesResponseServiceImpl
         query.setQueryResponse(request.getRemarks());
 
         if ("APPROVE".equalsIgnoreCase(request.getAction())) {
-
             query.setStatus("Approved");
-
         } else if ("REJECT".equalsIgnoreCase(request.getAction())) {
-
             query.setStatus("Rejected");
-
         } else {
             throw new RuntimeException(
                     "Invalid action. Use APPROVE or REJECT");
         }
-
-        queriesRepo.save(query);
 
         return new ApiResponse<>(
                 true,
@@ -224,25 +161,14 @@ public class QueriesResponseServiceImpl
         );
     }
 
-    // ================= COUNT DASHBOARD =================
-
     @Override
-    public ApiResponse<RequestCountDto>
-    getQueriesCounts() {
+    public ApiResponse<RequestCountDto> getQueriesCounts() {
 
         RequestCountDto dto = new RequestCountDto();
-
-        dto.setTotal(
-                queriesRepo.count());
-
-        dto.setApproved(
-                queriesRepo.countByStatusIgnoreCase("APPROVED"));
-
-        dto.setRejected(
-                queriesRepo.countByStatusIgnoreCase("REJECTED"));
-
-        dto.setPending(
-                queriesRepo.countByStatusIgnoreCase("PENDING"));
+        dto.setTotal(queriesRepo.count());
+        dto.setApproved(queriesRepo.countByStatusIgnoreCase("APPROVED"));
+        dto.setRejected(queriesRepo.countByStatusIgnoreCase("REJECTED"));
+        dto.setPending(queriesRepo.countByStatusIgnoreCase("PENDING"));
 
         return new ApiResponse<>(
                 true,
@@ -251,33 +177,7 @@ public class QueriesResponseServiceImpl
         );
     }
 
-    // ================= MAP ENTITY → DTO =================
-
     private QueriesResponseDto mapToDto(Queries q) {
-
-        Integer approvedById = null;
-        String approvedByName = null;
-
-        if (q.getQueryApprovedBy() != null) {
-
-            approvedById = q.getQueryApprovedBy();
-
-            User user =
-                    userRepository.findById(
-                                    Long.valueOf(approvedById))
-                            .orElse(null);
-
-            if (user != null) {
-                approvedByName =
-                        user.getFirstName() + " " +
-                                user.getLastName();
-            }
-        }
-
-        String fullName =
-                q.getAccount().getCustomer().getFirstName()
-                        + " " +
-                        q.getAccount().getCustomer().getLastName();
 
         QueriesResponseDto dto =
                 new QueriesResponseDto();
@@ -292,14 +192,33 @@ public class QueriesResponseServiceImpl
         dto.setAccountNumber(
                 q.getAccount().getAccountNumber());
 
-        dto.setFullName(fullName);
+        dto.setFullName(
+                q.getAccount().getCustomer().getFirstName()
+                        + " "
+                        + q.getAccount().getCustomer().getLastName());
+
         dto.setMobileNumber(
                 q.getAccount().getCustomer().getMobileNumber());
+
         dto.setCity(
                 q.getAccount().getCustomer().getCity());
+
         dto.setEmail(
                 q.getAccount().getCustomer().getEmail());
-        dto.setApprovedByName(approvedByName);
+
+        if (q.getQueryApprovedBy() != null) {
+
+            User user =
+                    userRepository.findById(
+                                    Long.valueOf(q.getQueryApprovedBy()))
+                            .orElse(null);
+
+            if (user != null) {
+                dto.setApprovedByName(
+                        user.getFirstName() + " "
+                                + user.getLastName());
+            }
+        }
 
         return dto;
     }
