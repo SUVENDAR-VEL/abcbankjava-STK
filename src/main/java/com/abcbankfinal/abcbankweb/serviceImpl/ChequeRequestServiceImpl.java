@@ -182,8 +182,7 @@ public class ChequeRequestServiceImpl
         );
     }
 
-    private ChequeRequestDto
-    mapEntityToDto(ChequeRequest req) {
+    private ChequeRequestDto mapEntityToDto(ChequeRequest req) {
 
         ChequeRequestDto dto = new ChequeRequestDto();
 
@@ -208,11 +207,22 @@ public class ChequeRequestServiceImpl
         dto.setCity(customer.getCity());
         dto.setEmail(customer.getEmail());
 
+        if (req.getApprovedBy() != null) {
+            userRepository.findById(
+                            Long.valueOf(req.getApprovedBy()))
+                    .ifPresent(admin ->
+                            dto.setApprovedByName(
+                                    admin.getFirstName()
+                                            + " " +
+                                            admin.getLastName()
+                            )
+                    );
+        }
+
         return dto;
     }
 
-    private ChequeRequestDto
-    mapFromCustomQuery(Object[] obj) {
+    private ChequeRequestDto mapFromCustomQuery(Object[] obj) {
 
         ChequeRequestDto dto = new ChequeRequestDto();
 
