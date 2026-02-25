@@ -95,4 +95,9 @@ WHERE a.account_number = :accountNumber
     AccountFullDetailsProjection findAccountFullDetails(
             @Param("accountNumber") Long accountNumber);
 
+    List<Account> findByCustomerUserIdAndStatusIgnoreCase(
+            Long userId,
+            String status
+    );
+
 }

@@ -24,4 +24,11 @@ public interface CardRepository extends JpaRepository<Card, Long> {
             String status,
             String cardTypeName
     );
+
+    List<Card> findByAccountAccountNumber(Long accountNumber);
+
+    List<Card> findByAccountAccountNumberAndStatusIgnoreCaseIn(
+            Long accountNumber,
+            List<String> statusList
+    );
 }

@@ -102,4 +102,53 @@ public class TransactionServiceImpl implements TransactionService {
                 response
         );
     }
+
+    @Override
+    public ApiResponse<List<CardDto>> getCardsByAccountNumberAndStatus(
+            Long accountNumber,
+            List<String> statusList) {
+
+        List<Card> cards;
+
+        if (statusList == null || statusList.isEmpty()) {
+
+            cards = cardRepository.findByAccountAccountNumber(accountNumber);
+        } else {
+
+            cards = cardRepository
+                    .findByAccountAccountNumberAndStatusIgnoreCaseIn(
+                            accountNumber,
+                            statusList
+                    );
+        }
+
+        if (cards.isEmpty()) {
+            return new ApiResponse<>(
+                    false,
+                    "No Cards Found For This Account",
+                    null
+            );
+        }
+
+        List<CardDto> response = cards.stream().map(card -> {
+            CardDto dto = new CardDto();
+            dto.setCardId(card.getCardId());
+            dto.setCardNumber(card.getCardNumber());
+            dto.setExpiryDate(card.getExpiryDate());
+            dto.setStatus(card.getStatus());
+
+            if (card.getCardType() != null) {
+                dto.setCardTypeName(
+                        card.getCardType().getCardTypeName()
+                );
+            }
+            return dto;
+        }).toList();
+
+        return new ApiResponse<>(
+                true,
+                "Cards Fetched Successfully",
+                response
+        );
+    }
 }

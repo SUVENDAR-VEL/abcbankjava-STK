@@ -72,4 +72,52 @@ public class AccountServiceImpl implements AccountService {
         return accountRepository.findAccountFullDetails(accountNumber);
     }
 
+    @Override
+    public ApiResponse<List<AccountResponseDto>> getActiveAccountsByUserId(Long userId) {
+
+        List<Account> accounts =
+                accountRepository.findByCustomerUserIdAndStatusIgnoreCase(
+                        userId,
+                        "ACTIVE"
+                );
+
+        if (accounts.isEmpty()) {
+            return new ApiResponse<>(
+                    false,
+                    "No Active Accounts Found For This User",
+                    null
+            );
+        }
+
+        List<AccountResponseDto> response =
+                accounts.stream().map(acc -> {
+
+                    AccountResponseDto dto = new AccountResponseDto();
+
+                    dto.setAccountNumber(acc.getAccountNumber());
+                    dto.setBalance(acc.getBalance());
+                    dto.setBranchName(acc.getBranchName());
+                    dto.setBranchCode(acc.getBranchCode());
+                    dto.setCity(acc.getCity());
+                    dto.setState(acc.getState());
+                    dto.setStatus(acc.getStatus());
+                    dto.setOpenedDate(acc.getOpenedDate());
+
+                    if (acc.getAccountType() != null) {
+                        dto.setAccountTypeName(
+                                acc.getAccountType().getAccountTypeName()
+                        );
+                    }
+
+                    return dto;
+
+                }).toList();
+
+        return new ApiResponse<>(
+                true,
+                "Active Accounts Fetched Successfully",
+                response
+        );
+    }
+
 }

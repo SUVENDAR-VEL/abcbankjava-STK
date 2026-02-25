@@ -35,6 +35,15 @@ public class AccountController {
         );
     }
 
+    @GetMapping("/userAccountsByStatus/{userId}")
+    public ResponseEntity<ApiResponse<List<AccountResponseDto>>>
+    getActiveAccountsByUserId(@PathVariable Long userId) {
+
+        return ResponseEntity.ok(
+                accountService.getActiveAccountsByUserId(userId)
+        );
+    }
+
     @GetMapping("/transactions/{accountNumber}")
     public ResponseEntity<ApiResponse<List<TransactionResponseDto>>>
     getTransactions(@PathVariable Long accountNumber) {
@@ -57,6 +66,19 @@ public class AccountController {
     public AccountFullDetailsProjection getAccountDetails(
             @PathVariable Long accountNumber) {
         return accountService.getAccountFullDetails(accountNumber);
+    }
+
+    @GetMapping("/userCardsByStatus/{accountNumber}")
+    public ResponseEntity<ApiResponse<List<CardDto>>> getCardsByStatus(
+            @PathVariable Long accountNumber,
+            @RequestParam(required = false) List<String> status
+    ) {
+        return ResponseEntity.ok(
+                transactionService.getCardsByAccountNumberAndStatus(
+                        accountNumber,
+                        status
+                )
+        );
     }
 
 }

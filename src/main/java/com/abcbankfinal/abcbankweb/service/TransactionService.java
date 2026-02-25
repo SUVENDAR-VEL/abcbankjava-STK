@@ -12,4 +12,9 @@ public interface TransactionService {
     ApiResponse<List<TransactionResponseDto>> getTransactionsByAccountNumber(Long accountNumber);
 
     ApiResponse<List<CardDto>> getCardsByAccountNumber(Long accountNumber);
+
+    ApiResponse<List<CardDto>> getCardsByAccountNumberAndStatus(
+            Long accountNumber,
+            List<String> statusList
+    );
 }
