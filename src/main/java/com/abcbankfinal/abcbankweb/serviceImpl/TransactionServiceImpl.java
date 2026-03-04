@@ -106,49 +106,52 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public ApiResponse<List<CardDto>> getCardsByAccountNumberAndStatus(
             Long accountNumber,
-            List<String> statusList) {
+            List<String> status
+    ) {
 
         List<Card> cards;
 
-        if (statusList == null || statusList.isEmpty()) {
+        // ✅ If status is null or empty → fetch all cards
+        if (status == null || status.isEmpty()) {
 
-            cards = cardRepository.findByAccountAccountNumber(accountNumber);
+            cards = cardRepository
+                    .findByAccountAccountNumber(accountNumber);
+
         } else {
 
             cards = cardRepository
-                    .findByAccountAccountNumberAndStatusIgnoreCaseIn(
+                    .findByAccountAccountNumberAndStatusInIgnoreCase(
                             accountNumber,
-                            statusList
+                            status
                     );
         }
 
         if (cards.isEmpty()) {
             return new ApiResponse<>(
                     false,
-                    "No Cards Found For This Account",
+                    "No cards found",
                     null
             );
         }
 
-        List<CardDto> response = cards.stream().map(card -> {
+        List<CardDto> cardDtos = cards.stream().map(card -> {
             CardDto dto = new CardDto();
             dto.setCardId(card.getCardId());
             dto.setCardNumber(card.getCardNumber());
+            dto.setCurrentLimit(card.getCurrentLimit());
+            dto.setIssuedDate(card.getIssuedDate());
             dto.setExpiryDate(card.getExpiryDate());
             dto.setStatus(card.getStatus());
-
-            if (card.getCardType() != null) {
-                dto.setCardTypeName(
-                        card.getCardType().getCardTypeName()
-                );
-            }
+            dto.setMaxLimit(card.getMaxLimit());
+            dto.setCardTypeName(card.getCardType().getCardTypeName());
+            dto.setAccountNumber(card.getAccount().getAccountNumber());
             return dto;
         }).toList();
 
         return new ApiResponse<>(
                 true,
-                "Cards Fetched Successfully",
-                response
+                "Cards fetched successfully",
+                cardDtos
         );
     }
 }

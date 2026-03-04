@@ -73,6 +73,7 @@ public class AccountController {
             @PathVariable Long accountNumber,
             @RequestParam(required = false) List<String> status
     ) {
+
         return ResponseEntity.ok(
                 transactionService.getCardsByAccountNumberAndStatus(
                         accountNumber,
